@@ -18,8 +18,8 @@
       <developerConnection>scm:svn:https://master.lgohlke.de/_svn/projects/MetricsAnalyzer/trunk</developerConnection>
    </scm>
 
-   <properties>
-      <sonar.version>2.10</sonar.version>
+   <properties><java.version>7</java.version>
+      <sonar.version>2.11</sonar.version>
       <lombok.version>0.10.2</lombok.version>
       <scm.path>https://master.lgohlke.de/_svn/projects/MetricsAnalyzer/trunk</scm.path>
       <java.main.class>de.lgohlke.runner.CLIRunner</java.main.class>
@@ -243,7 +243,7 @@
                   <dependency>
                      <groupId>sun.jdk</groupId>
                      <artifactId>tools</artifactId>
-                     <version>1.6</version>
+                     <version>${java.version}</version>
                      <scope>system</scope>
                      <systemPath>${JAVA_HOME}/lib/tools.jar</systemPath>
                   </dependency>
@@ -259,6 +259,16 @@
                         <mainClass>${java.main.class}</mainClass>
                      </manifest>
                   </archive>
+               </configuration>
+            </plugin>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-compiler-plugin</artifactId>
+               <version>2.3.2</version>
+               <configuration>
+                  <source>${java.version}</source>
+                  <target>${java.version}</target>
+                  <encoding>UTF-8</encoding>
                </configuration>
             </plugin>
          </plugins>
