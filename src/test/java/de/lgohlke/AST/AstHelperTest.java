@@ -9,6 +9,7 @@ import java.util.Set;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang.StringUtils;
 import org.junit.Assert;
@@ -36,7 +37,7 @@ import de.lgohlke.AST.visitors.VariableTypeDistanceVisitor;
  * <p>
  * AstHelperTest class.
  * </p>
- *
+ * 
  * @author lars
  * @version $Id: $
  * @since 0.3
@@ -304,7 +305,7 @@ public class AstHelperTest
   }
 
   @RequiredArgsConstructor
-  //  @Slf4j
+  @Slf4j
   public static class MyVariableAssignVisitor extends JavaAstVisitor
   {
 
@@ -361,7 +362,7 @@ class MyMethodVisitor extends MethodVisitor
    * <p>
    * Constructor for MyMethodVisitor.
    * </p>
-   *
+   * 
    * @param registry
    *          a {@link de.lgohlke.AST.Registry} object.
    */
@@ -410,7 +411,7 @@ class MyVariableTypeDistanceVisitor extends VariableTypeDistanceVisitor
    * <p>
    * Constructor for MyVariableTypeDistanceVisitor.
    * </p>
-   *
+   * 
    * @param registry
    *          a {@link de.lgohlke.AST.Registry} object.
    * @param rule
