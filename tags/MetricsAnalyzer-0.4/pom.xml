@@ -1,0 +1,298 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+
+   <parent>
+      <groupId>de.lgohlke.poms</groupId>
+      <artifactId>parent</artifactId>
+      <version>2</version>
+   </parent>
+
+   <groupId>de.lgohlke.master</groupId>
+   <artifactId>MetricsAnalyzer</artifactId>
+   <version>0.4</version>
+   <name>MetricsAnalyzer</name>
+
+   <scm>
+      <!-- <connection>scm:svn:https://master.lgohlke.de/_svn/projects/MetricAnalyzer/trunk</connection> -->
+      <developerConnection>scm:svn:https://master.lgohlke.de/_svn/projects/MetricsAnalyzer/tags/MetricsAnalyzer-0.4</developerConnection>
+   </scm>
+
+   <properties>
+      <sonar.version>2.10</sonar.version>
+      <lombok.version>0.10.2</lombok.version>
+      <scm.path>https://master.lgohlke.de/_svn/projects/MetricsAnalyzer/trunk</scm.path>
+      <java.main.class>de.lgohlke.runner.CLIRunner</java.main.class>
+      <test-type>NONE</test-type>
+   </properties>
+
+   <repositories>
+      <repository>
+         <id>gson</id>
+         <url>http://google-gson.googlecode.com/svn/mavenrepo</url>
+         <snapshots>
+            <enabled>true</enabled>
+         </snapshots>
+         <releases>
+            <enabled>true</enabled>
+         </releases>
+      </repository>
+   </repositories>
+
+   <dependencies>
+      <dependency>
+         <groupId>org.codehaus.sonar</groupId>
+         <artifactId>sonar-plugin-api</artifactId>
+         <version>${sonar.version}</version>
+         <exclusions>
+            <exclusion>
+               <groupId>org.slf4j</groupId>
+               <artifactId>jcl-over-slf4j</artifactId>
+            </exclusion>
+            <exclusion>
+               <groupId>org.slf4j</groupId>
+               <artifactId>log4j-over-slf4j</artifactId>
+            </exclusion>
+         </exclusions>
+      </dependency>
+      <!-- unit tests -->
+      <!-- <dependency> <groupId>org.codehaus.sonar</groupId> <artifactId>sonar-testing-harness</artifactId> 
+         <version>${sonar.version}</version> </dependency> -->
+      <dependency>
+         <groupId>org.codehaus.sonar</groupId>
+         <artifactId>sonar-squid</artifactId>
+         <version>${sonar.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>org.codehaus.sonar</groupId>
+         <artifactId>sonar-java-api</artifactId>
+         <version>${sonar.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>org.codehaus.sonar.plugins</groupId>
+         <artifactId>sonar-squid-java-plugin</artifactId>
+         <version>${sonar.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>org.codehaus.sonar.plugins</groupId>
+         <artifactId>sonar-cpd-plugin</artifactId>
+         <version>${sonar.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>org.codehaus.sonar.plugins</groupId>
+         <artifactId>sonar-pmd-plugin</artifactId>
+         <version>${sonar.version}</version>
+      </dependency>
+
+      <dependency>
+         <groupId>org.codehaus.sonar</groupId>
+         <artifactId>sonar-batch</artifactId>
+         <version>${sonar.version}</version>
+      </dependency>
+
+      <dependency>
+         <groupId>com.thoughtworks.qdox</groupId>
+         <artifactId>qdox</artifactId>
+         <version>1.12</version>
+         <!-- <scope>test</scope> -->
+      </dependency>
+      <!-- <dependency> <groupId>org.testng</groupId> <artifactId>testng</artifactId> 
+         <version>5.14.10</version> <scope>test</scope> </dependency> -->
+      <dependency>
+         <groupId>junit</groupId>
+         <artifactId>junit</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>commons-io</groupId>
+         <artifactId>commons-io</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.apache.commons</groupId>
+         <artifactId>commons-math</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>commons-logging</groupId>
+         <artifactId>commons-logging</artifactId>
+      </dependency>
+      <!-- <dependency> <groupId>commons-codec</groupId> <artifactId>commons-codec</artifactId> 
+         </dependency> -->
+      <!-- <dependency> <groupId>commons-lang</groupId> <artifactId>commons-lang</artifactId> 
+         <version>2.6</version> </dependency> -->
+      <!-- Gson: Java to Json conversion -->
+      <dependency>
+         <groupId>com.google.code.gson</groupId>
+         <artifactId>gson</artifactId>
+         <version>1.7.2</version>
+      </dependency>
+
+      <dependency>
+         <groupId>org.slf4j</groupId>
+         <artifactId>slf4j-api</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>ch.qos.logback</groupId>
+         <artifactId>logback-classic</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.mockito</groupId>
+         <artifactId>mockito-all</artifactId>
+         <version>1.9.0-rc1</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>de.lgohlke</groupId>
+         <artifactId>commons</artifactId>
+         <version>0.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+         <groupId>net.sf.ehcache</groupId>
+         <artifactId>ehcache</artifactId>
+         <version>2.4.6</version>
+         <type>pom</type>
+      </dependency>
+      <dependency>
+         <groupId>org.projectlombok</groupId>
+         <artifactId>lombok</artifactId>
+         <version>${lombok.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>org.picocontainer</groupId>
+         <artifactId>picocontainer</artifactId>
+         <version>2.13.6</version>
+      </dependency>
+      <dependency>
+         <groupId>org.picocontainer</groupId>
+         <artifactId>picocontainer-gems</artifactId>
+         <version>2.13.6</version>
+      </dependency>
+      <dependency>
+         <groupId>com.google.guava</groupId>
+         <artifactId>guava</artifactId>
+         <version>r09</version>
+      </dependency>
+      <dependency>
+         <groupId>net.sf.jopt-simple</groupId>
+         <artifactId>jopt-simple</artifactId>
+         <version>4.1</version>
+      </dependency>
+      <dependency>
+         <groupId>org.hamcrest</groupId>
+         <artifactId>hamcrest-core</artifactId>
+         <version>1.2.1</version>
+      </dependency>
+      <dependency>
+         <groupId>org.testng</groupId>
+         <artifactId>testng</artifactId>
+         <version>6.3</version>
+      </dependency>
+   </dependencies>
+
+   <build>
+      <pluginManagement>
+         <plugins>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-surefire-plugin</artifactId>
+               <version>2.10</version>
+               <dependencies>
+                  <dependency>
+                     <groupId>org.apache.maven.surefire</groupId>
+                     <artifactId>surefire-junit4</artifactId>
+                     <version>2.10</version>
+                  </dependency>
+               </dependencies>
+            </plugin>
+            <plugin>
+               <groupId>org.projectlombok</groupId>
+               <artifactId>maven-lombok-plugin</artifactId>
+               <version>0.9.3.1</version>
+               <configuration>
+                  <sourceDirectory>src/main/java</sourceDirectory>
+               </configuration>
+               <executions>
+                  <execution>
+                     <phase>generate-sources</phase>
+                     <goals>
+                        <goal>delombok</goal>
+                     </goals>
+                  </execution>
+               </executions>
+               <dependencies>
+                  <dependency>
+                     <groupId>org.projectlombok</groupId>
+                     <artifactId>lombok</artifactId>
+                     <version>0.9.3.1</version>
+                  </dependency>
+                  <dependency>
+                     <groupId>sun.jdk</groupId>
+                     <artifactId>tools</artifactId>
+                     <version>1.6</version>
+                     <scope>system</scope>
+                     <systemPath>${JAVA_HOME}/lib/tools.jar</systemPath>
+                  </dependency>
+               </dependencies>
+            </plugin>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-jar-plugin</artifactId>
+               <configuration>
+                  <archive>
+                     <manifest>
+                        <addClasspath>true</addClasspath>
+                        <mainClass>${java.main.class}</mainClass>
+                     </manifest>
+                  </archive>
+               </configuration>
+            </plugin>
+         </plugins>
+      </pluginManagement>
+
+      <plugins>
+         <plugin>
+            <artifactId>maven-release-plugin</artifactId>
+            <configuration>
+               <tagBase>https://master.lgohlke.de/_svn/projects/MetricsAnalyzer/tags</tagBase>
+            </configuration>
+         </plugin>
+         <!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-assembly-plugin</artifactId> 
+            <executions> <execution> <goals> <goal>attached</goal> </goals> <phase>package</phase> 
+            <configuration> <descriptorRefs> <descriptorRef>jar-with-dependencies</descriptorRef> 
+            </descriptorRefs> <archive> <manifest> <mainClass>${java.main.class}</mainClass> 
+            </manifest> </archive> </configuration> </execution> </executions> </plugin> -->
+         <!-- <plugin> <groupId>org.codehaus.mojo</groupId> <artifactId>build-helper-maven-plugin</artifactId> 
+            <version>1.7</version> <executions> <execution> <id>add-source</id> <phase>generate-sources</phase> 
+            <goals> <goal>add-source</goal> </goals> <configuration> <sources> <source>src/main/aspect</source> 
+            </sources> </configuration> </execution> </executions> </plugin> -->
+      </plugins>
+   </build>
+   <profiles>
+      <profile>
+         <id>analyzer</id>
+         <build>
+            <plugins>
+               <plugin>
+                  <groupId>org.codehaus.mojo</groupId>
+                  <artifactId>exec-maven-plugin</artifactId>
+                  <executions>
+                     <execution>
+                        <phase>compile</phase>
+                        <goals>
+                           <goal>java</goal>
+                        </goals>
+                        <configuration>
+                           <mainClass>${java.main.class}</mainClass>
+                           <arguments>
+                              <argument>--maven-project-path</argument>
+                              <argument>${maven-project-path}</argument>
+                              <argument>--test-type</argument>
+                              <argument>${test-type}</argument>
+                           </arguments>
+                        </configuration>
+                     </execution>
+                  </executions>
+               </plugin>
+            </plugins>
+         </build>
+      </profile>
+   </profiles>
+</project>
