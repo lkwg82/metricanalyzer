@@ -5,24 +5,14 @@ import static junit.framework.Assert.assertEquals;
 import java.util.ArrayList;
 
 import org.junit.Test;
+import org.sonar.core.plugin.AbstractPluginRepositoryTest.A;
+import org.sonar.core.plugin.AbstractPluginRepositoryTest.B;
 
-import de.lgohlke.AST.calculators.X.A;
-import de.lgohlke.AST.calculators.X.B;
 import de.lgohlke.AST.calculators.Y.Z;
 
-/**
- * <p>TypeDistanceCalculatorTest class.</p>
- *
- * @author lars
- * @version $Id: $
- * @since 0.3
- */
 public class TypeDistanceCalculatorTest
 {
 
-  /**
-   * <p>testJavaCore.</p>
-   */
   @Test
   public void testJavaCore()
   {
@@ -32,9 +22,6 @@ public class TypeDistanceCalculatorTest
     assertEquals(0D, new TypeDistanceCalculator(String.class, this.getClass()).calculate());
   }
 
-  /**
-   * <p>testNormal.</p>
-   */
   @Test
   public void testNormal()
   {
@@ -42,9 +29,6 @@ public class TypeDistanceCalculatorTest
     assertEquals(2D, new TypeDistanceCalculator(X.class, Z.class).calculate());
   }
 
-  /**
-   * <p>testVoid.</p>
-   */
   @Test
   public void testVoid()
   {
@@ -52,9 +36,6 @@ public class TypeDistanceCalculatorTest
     assertEquals(0D, c.calculate());
   }
 
-  /**
-   * <p>differentPathLength.</p>
-   */
   @Test
   public void differentPathLength()
   {

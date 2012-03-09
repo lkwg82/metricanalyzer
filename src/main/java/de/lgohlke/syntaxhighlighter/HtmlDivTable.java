@@ -5,12 +5,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
-/**
- * <p>HtmlDivTable class.</p>
- *
- * @author lars
- * @version $Id: $
- */
 public class HtmlDivTable extends StyleableElementAbstract
 {
 
@@ -23,12 +17,6 @@ public class HtmlDivTable extends StyleableElementAbstract
 
   private String              columnStyle  = "";
 
-  /**
-   * <p>Constructor for HtmlDivTable.</p>
-   *
-   * @param columns a int.
-   * @param rows a int.
-   */
   public HtmlDivTable(final int columns, final int rows)
   {
     this.columns = columns;
@@ -36,29 +24,17 @@ public class HtmlDivTable extends StyleableElementAbstract
     cells = new ArrayList<String>(columns * rows);
   }
 
-  /**
-   * <p>Constructor for HtmlDivTable.</p>
-   *
-   * @param columns a int.
-   */
   public HtmlDivTable(final int columns)
   {
     this(columns, 0);
   }
 
-  /**
-   * <p>cell.</p>
-   *
-   * @param string a {@link java.lang.String} object.
-   * @return a {@link de.lgohlke.syntaxhighlighter.HtmlDivTable} object.
-   */
   public HtmlDivTable cell(final String string)
   {
     this.cells.add(string);
     return this;
   }
 
-  /** {@inheritDoc} */
   @Override
   public String toString()
   {
@@ -71,19 +47,19 @@ public class HtmlDivTable extends StyleableElementAbstract
     b.append("\n");
     b.append(getColumnStyle());
 
-    List<StringBuffer> columnDivs = new ArrayList<StringBuffer>(columns);
+    StringBuffer[] columnDivs = new StringBuffer[columns];
 
     for (int i = 0; i < cells.size(); i++)
     {
-      //      int col = i % columns;
+      int col = i % columns;
       int row = (int) Math.floor(i / (double) columns);
 
       if ((row == 0) && (i < columns))// erste Zeile
       {
-        columnDivs.add(new StringBuffer("\t<td class=\" cell\"> \n"));
+        columnDivs[col] = new StringBuffer("\t<td class=\" cell\"> \n");
       }
 
-      StringBuffer currentColumn = columnDivs.get(i % columns);
+      StringBuffer currentColumn = columnDivs[i % columns];
 
       currentColumn.append("\t\t");
       if (row == (rows - 1))// last row
@@ -111,21 +87,11 @@ public class HtmlDivTable extends StyleableElementAbstract
     return b.toString();
   }
 
-  /**
-   * <p>Getter for the field <code>columnStyle</code>.</p>
-   *
-   * @return a {@link java.lang.String} object.
-   */
   public String getColumnStyle()
   {
     return columnStyle;
   }
 
-  /**
-   * <p>Setter for the field <code>columnStyle</code>.</p>
-   *
-   * @param columnStyle a {@link java.lang.String} object.
-   */
   public void setColumnStyle(final String columnStyle)
   {
     this.columnStyle = columnStyle;

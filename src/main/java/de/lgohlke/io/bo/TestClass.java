@@ -5,30 +5,34 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.thoughtworks.qdox.model.JavaClass;
 
-/**
- * <p>
- * TestClass class.
- * </p>
- * 
- * @author lars
- * @version $Id: $
- */
-@Slf4j
-@RequiredArgsConstructor
-@Data
 public class TestClass
 {
+  private final static Logger    log   = LoggerFactory.getLogger(TestClass.class);
   private final JavaClass        clazz;
   private final List<TestMethod> tests = new ArrayList<TestMethod>();
   private final File             file;
 
-  /** {@inheritDoc} */
+  public TestClass(final JavaClass clazz, final File file)
+  {
+    this.file = file;
+    this.clazz = clazz;
+  }
+
+  public List<TestMethod> getTests()
+  {
+    return tests;
+  }
+
+  public JavaClass getClazz()
+  {
+    return clazz;
+  }
+
   @Override
   public String toString()
   {

@@ -4,57 +4,31 @@ import java.io.File;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.picocontainer.MutablePicoContainer;
 import org.sonar.squid.measures.Metric;
 import org.sonar.squid.measures.MetricDef;
 
-import de.lgohlke.PicoContainerFactory;
 import de.lgohlke.AST.ASTMetrics;
 
-/**
- * <p>
- * AstProcessorTest class.
- * </p>
- * 
- * @author lars
- * @version $Id: $
- * @since 0.3
- */
 public class AstProcessorTest
 {
-  private MutablePicoContainer pico;
-  private AstProcessor         processor;
+  private AstProcessor processor;
+  private final File   baseDir = new File(System.getProperty("user.dir"));
 
-  private final MetricDef[]    metrics = new MetricDef[] { Metric.COMPLEXITY, ASTMetrics.AST_VARIABLE_DEFINITION_TYPE_DISTANCE,
-      ASTMetrics.AST_NUMBER_OF_VARIABLE_DEFINITION, };
-
-  /**
-   * <p>
-   * setup.
-   * </p>
-   */
   @Before
   public void setup()
   {
-    pico = PicoContainerFactory.createContainer();
-    processor = new AstProcessor(pico);
+    processor = new AstProcessor();
   }
 
-  /**
-   * <p>
-   * testProcess.
-   * </p>
-   * 
-   * @throws java.lang.Exception
-   *           if any.
-   */
-  @Test //(timeout=20*1000)
+  @Test
   public void testProcess() throws Exception
   {
+    MetricDef[] metrics = new MetricDef[]
+    { Metric.COMPLEXITY, ASTMetrics.AST_VARIABLE_DEFINITION_TYPE_DISTANCE, ASTMetrics.AST_NUMBER_OF_VARIABLE_DEFINITION, };
 
-    File subDir = new File("src/main/java");
+    File subDir = new File(baseDir.getAbsolutePath() + "/src");
 
-    processor.addDirectories(subDir);
+    processor.addDirectories(baseDir, subDir);
     processor.init();
     processor.scan();
 
@@ -63,20 +37,5 @@ public class AstProcessorTest
 
     // System.out.println("Project type distance: " + prj.getInt(ASTMetrics.AST_VARIABLE_DEFINITION_TYPE_DISTANCE));
     // System.out.println("Project complexity:" + prj.getInt(Metric.COMPLEXITY));
-  }
-
-  /**
-   * <p>
-   * testProcessEmptydirList.
-   * </p>
-   * 
-   * @throws de.lgohlke.io.AstProcessorException
-   *           if any.
-   */
-  @Test(expected = AstProcessorException.class)
-  public void testProcessEmptydirList() throws AstProcessorException
-  {
-    processor.init();
-    processor.scan();
   }
 }

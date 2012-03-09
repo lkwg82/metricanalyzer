@@ -1,61 +1,68 @@
 package de.lgohlke.AST.output;
 
 import java.io.PrintStream;
-
-import lombok.RequiredArgsConstructor;
+import java.util.Collection;
 
 import org.picocontainer.MutablePicoContainer;
+import org.sonar.squid.Squid;
 import org.sonar.squid.api.SourceClass;
 import org.sonar.squid.api.SourceCode;
 import org.sonar.squid.api.SourceMethod;
+import org.sonar.squid.indexer.QueryByType;
 import org.sonar.squid.measures.Metric;
-import org.sonar.squid.measures.MetricDef;
 
-/**
- * <p>ClassPrinter class.</p>
- *
- * @author lars
- * @version $Id: $
- */
-@RequiredArgsConstructor
 public class ClassPrinter
 {
   private final SourceClass          clazz;
   private final MutablePicoContainer pico;
-  private final PrintStream          out = System.out;
+  private PrintStream                out = System.out;
 
-  /**
-   * <p>print.</p>
-   */
-  public void print()
+  public ClassPrinter(final SourceClass clazz, final MutablePicoContainer pico)
+  {
+    this.pico = pico;
+    this.clazz = clazz;
+  }
+
+  @SuppressWarnings("deprecation")
+  public void print() throws NoSuchFieldException, IllegalAccessException
   {
 
-    // Squid index = (Squid) pico.getComponent("singleton");
+    Squid index = (Squid) pico.getComponent("singleton");
     Formatter format = (Formatter) pico.getComponent("formatter");
 
     out.println(format + " C " + clazz);
-    out.println(format + " Class complexity:" + clazz.getInt((MetricDef) Metric.COMPLEXITY));
-    // out.println(" imports: ");
+    out.println("Class complexity:" + clazz.getInt(Metric.COMPLEXITY));
+    out.println(" imports: ");
+    // Object data = clazz.getData(ASTMetrics.AST_VARIABLE_DEFINITION_TYPE_DISTANCE);
 
-    if (clazz.hasChildren())
+    Collection<SourceCode> results = index.search(new QueryByType(SourceMethod.class));
+    for (SourceCode member : results)
     {
-      for (SourceCode member : clazz.getChildren())
+      format.plus();
+      if (member.isType(SourceClass.class))
       {
-        format.plus();
-        if (member.isType(SourceClass.class))
-        {
-          new ClassPrinter((SourceClass) member, pico).print();
-        }
-        else if (member.isType(SourceMethod.class))
-        {
-          SourceMethod m = (SourceMethod) member;
-          if (m.toString().startsWith(clazz.toString()))
-          {
-            new MethodPrinter(m, pico).print();
-          }
-        }
-        format.minus();
+        new ClassPrinter((SourceClass) member, pico).print();
       }
+      else if (member.isType(SourceMethod.class))
+      {
+        SourceMethod m = (SourceMethod) member;
+        if (m.toString().startsWith(clazz.toString()))
+        {
+          new MethodPrinter(m, pico).print();
+        }
+      }
+      format.minus();
+
     }
+  }
+
+  public void setOut(final PrintStream out)
+  {
+    this.out = out;
+  }
+
+  public PrintStream getOut()
+  {
+    return out;
   }
 }

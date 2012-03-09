@@ -1,0 +1,8 @@
+#Mon May 09 15:09:11 CEST 2011
+analyseLocally=true
+eclipse.preferences.version=1
+projectArtifactId=MetricAnalyzer
+projectBranch=
+projectGroupId=de.lgohlke.MetricAnalyzer
+serverUrl=http\://localhost\:9000
+version=1

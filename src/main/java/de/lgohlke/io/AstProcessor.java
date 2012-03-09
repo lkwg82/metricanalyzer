@@ -1,22 +1,17 @@
 package de.lgohlke.io;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import lombok.AccessLevel;
-import lombok.Data;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
-import org.picocontainer.MutablePicoContainer;
-import org.sonar.api.resources.InputFile;
-import org.sonar.api.resources.InputFileUtils;
+import org.apache.commons.io.filefilter.HiddenFileFilter;
+import org.apache.commons.io.filefilter.IOFileFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.sonar.java.ast.JavaAstScanner;
 import org.sonar.java.squid.JavaSquidConfiguration;
 import org.sonar.squid.Squid;
@@ -24,155 +19,83 @@ import org.sonar.squid.api.SourceCode;
 import org.sonar.squid.api.SourceProject;
 import org.sonar.squid.measures.MetricDef;
 
-import com.google.common.collect.Lists;
-
 import de.lgohlke.AST.Registry;
 import de.lgohlke.AST.calculators.DISTANCE_RULE;
-import de.lgohlke.AST.visitors.AssertCountVisitor;
-import de.lgohlke.AST.visitors.MethodVisitor;
-import de.lgohlke.AST.visitors.QDoxParserErrorsFixerVisitor;
+import de.lgohlke.AST.visitors.QDoxFileVisitor;
 import de.lgohlke.AST.visitors.VariableTypeDistanceVisitor;
 
-/**
- * <p>
- * AstProcessor class.
- * </p>
- * 
- * @author lars
- * @version $Id: $
- */
-@Slf4j
-@Data
 public class AstProcessor
 {
-  private final MutablePicoContainer pico;
-  private final Squid                squid     = new Squid(new JavaSquidConfiguration(false));
-  private final Registry             registry  = new Registry();
-  @Getter(value = AccessLevel.NONE)
-  private final Set<File>            scanPaths = new HashSet<File>();
+  private static final Logger log       = LoggerFactory.getLogger(AstProcessor.class);
+  private final Squid         squid     = new Squid(new JavaSquidConfiguration(false));
+  private final Registry      registry;
+  private final Set<File>     scanPaths = new HashSet<File>();
+
+  public AstProcessor()
+  {
+    registry = new Registry();
+  }
 
   public static class MyJavaAstScanner extends JavaAstScanner
   {
+
     public MyJavaAstScanner(final JavaSquidConfiguration conf, final SourceCode project)
     {
       super(conf, project);
     }
 
     @Override
-    public JavaAstScanner scanFiles(final Collection<InputFile> inputFiles)
+    public JavaAstScanner scanDirectory(final File javaSourceDirectory)
     {
-      JavaAstScanner result = super.scanFiles(inputFiles);
-      log.info("finished scanning");
-      return result;
-    }
+      log.info("scanning " + javaSourceDirectory);
+      // do not scan hidden directories/files
 
-    public JavaAstScanner scanDirectories(final Set<File> scanPaths)
-    {
-      List<InputFile> inputFiles = Lists.newArrayList();
-      for (File path : scanPaths)
-      {
-        Collection<File> files = FileUtils.listFiles(path, FileFilterUtils.fileFileFilter(), FileFilterUtils.directoryFileFilter());
-        for (File file : files)
-        {
-          inputFiles.add(InputFileUtils.create(path, file));
-        }
-      }
-      return scanFiles(inputFiles);
+      IOFileFilter fileFilter = FileFilterUtils.and(HiddenFileFilter.VISIBLE, FileFilterUtils.fileFileFilter());
+      IOFileFilter directoryFilter = FileFilterUtils.and(HiddenFileFilter.VISIBLE, FileFilterUtils.directoryFileFilter());
+      List<File> files = new ArrayList<File>(FileUtils.listFiles(javaSourceDirectory, fileFilter, directoryFilter));
+      return scanFiles(files);
     }
   }
 
-  /**
-   * <p>
-   * addDirectories.
-   * </p>
-   * 
-   * @param paths
-   *          a {@link java.io.File} object.
-   * @throws java.io.IOException
-   *           if any.
-   */
-  public void addDirectories(final File... paths) throws IOException
+  public void addDirectories(final File... paths)
   {
-    SourcePathFixer fixer = new SourcePathFixer(registry);
-    for (File path : paths)
+    for (File p : paths)
     {
-      for (String _path : fixer.scan(path))
+      if (!scanPaths.add(p))
       {
-        scanPaths.add(new File(_path));
+        log.warn("could not add this path: " + p.getAbsolutePath());
       }
     }
   }
 
-  /**
-   * <p>
-   * init.
-   * </p>
-   */
   public void init()
   {
-    // preparation
-    squid.registerVisitor(new QDoxParserErrorsFixerVisitor(registry));
-    // squid.registerVisitor(new QDoxFileVisitor(registry));
-    squid.registerVisitor(new MethodVisitor(registry));
-
-    // real metric visitors
-    squid.registerVisitor(new AssertCountVisitor(registry));
-    squid.registerVisitor(new VariableTypeDistanceVisitor(registry, DISTANCE_RULE.HIGHEST));
+    squid.registerVisitor(new QDoxFileVisitor(getRegistry()));
+    squid.registerVisitor(new VariableTypeDistanceVisitor(getRegistry(), DISTANCE_RULE.HIGHEST));
   }
 
-  /**
-   * <p>
-   * scan.
-   * </p>
-   * 
-   * @throws de.lgohlke.io.AstProcessorException
-   *           if any.
-   */
-  public void scan() throws AstProcessorException
+  public void scan() throws Exception
   {
-
-    if (scanPaths.isEmpty())
+    if (scanPaths.size() == 0)
     {
-      throw new AstProcessorException("scan path list is zero");
+      throw new Exception("scan path list is zero");
     }
 
-    try
+    for (File path : scanPaths)
     {
-      new JavaSourceScanner(pico, registry).//
-      addDirs(scanPaths.toArray(new File[scanPaths.size()])).//
-      scan();
+      squid.register(MyJavaAstScanner.class).scanDirectory(path);
     }
-    catch (IOException e)
-    {
-      throw new AstProcessorException(e);
-    }
-
-    //    for (File path : scanPaths)
-    //    {
-    //      new JavaSourceFileFinder().addVisitor(new IFileVisitor()
-    //      {
-    //        @Override
-    //        public void visit(final File file)
-    //        {
-    //          squid.register(MyJavaAstScanner.class).scanFile( InputFileUtils.create(basedir, file));
-    //        }
-    //      }).scanDirectory(path);
-    //    }
-    squid.register(MyJavaAstScanner.class).scanDirectories(scanPaths);
   }
 
-  /**
-   * <p>
-   * decorateTreeWithMetrics.
-   * </p>
-   * 
-   * @param metrics
-   *          a {@link org.sonar.squid.measures.MetricDef} object.
-   * @return a {@link org.sonar.squid.api.SourceProject} object.
-   */
   public SourceProject decorateTreeWithMetrics(final MetricDef... metrics)
   {
     log.info("decorating");
     return squid.decorateSourceCodeTreeWith(metrics);
   }
+
+  public Registry getRegistry()
+  {
+    return registry;
+  }
+
 }

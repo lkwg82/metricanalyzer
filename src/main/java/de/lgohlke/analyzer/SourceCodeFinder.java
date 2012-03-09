@@ -1,79 +1,115 @@
 package de.lgohlke.analyzer;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
-import org.sonar.squid.api.Query;
+import org.sonar.squid.api.SourceClass;
 import org.sonar.squid.api.SourceCode;
-import org.sonar.squid.api.SourceCodeSearchEngine;
 import org.sonar.squid.api.SourceFile;
 import org.sonar.squid.api.SourceMethod;
+import org.sonar.squid.api.SourcePackage;
+import org.sonar.squid.api.SourceProject;
 
-import com.thoughtworks.qdox.model.JavaMethod;
+import de.lgohlke.io.bo.TestMethod;
 
 /**
  * retrieves the {@link org.sonar.squid.api.SourceCode} from {@link org.sonar.squid.api.SourceProject}
  * 
  * @author lars
- * @version $Id: $
  */
-@Slf4j
-@RequiredArgsConstructor
 public class SourceCodeFinder
 {
-  private final SourceCodeSearchEngine searchEngine;
 
-  /**
-   * <p>
-   * findSourceCodeFor.
-   * </p>
-   * 
-   * @param test
-   *          a {@link de.lgohlke.io.bo.TestMethod} object.
-   * @return a {@link org.sonar.squid.api.SourceCode} object.
-   */
-  public SourceCode findSourceCodeFor(final JavaMethod test)
+  private final SourceProject project;
+
+  public SourceCodeFinder(final SourceProject project)
   {
-    final String testFile = test.getParentClass().getSource().getURL().getFile();
-    if (log.isDebugEnabled())
+    this.project = project;
+  }
+
+  public SourceCode findSourceCodeFor(final TestMethod test)
+  {
+    // JavaClass clazz = test.getMethod().getParentClass();
+    //
+    // String packageName = clazz.getPackageName().replace(".", "/");
+    // String className = packageName + "/" + clazz.getName().replace(".", "/");
+
+    SourceCode code = findSourcecode(project, SourceMethod.class, test.getMethod().toString(), test.getMethod().getLineNumber());
+
+    return code;
+  }
+
+  private SourceCode findSourcecode(final SourceCode code, final Class<? extends SourceCode> type, final String identifier, final int startLine)
+  {
+    SourceCode result = null;
+
+    if (code.isType(SourceProject.class))
     {
-      log.debug("seeking " + test);
+      result = compareTypeAndGoOn(result, SourceProject.class, type, code, identifier);
     }
-    Collection<SourceCode> results = searchEngine.search(new Query()
+    else if (code.isType(SourcePackage.class))
     {
-      @Override
-      public boolean match(final SourceCode unit)
+      result = compareTypeAndGoOn(result, SourcePackage.class, type, code, identifier);
+    }
+    else if (code.isType(SourceFile.class))
+    {
+      result = compareTypeAndGoOn(result, SourceFile.class, type, code, identifier);
+    }
+    else if (code.isType(SourceClass.class))
+    {
+      result = compareTypeAndGoOn(result, SourceClass.class, type, code, identifier);
+    }
+    else if (code.isType(SourceMethod.class) && (code.getStartAtLine() == startLine))
+    {
+      String currentClass = code.getParent().getKey().replace("/", ".");
+
+      // roughly testing
+      if (identifier.contains(currentClass + "."))
       {
-        if (unit.isType(SourceMethod.class) && (unit.getStartAtLine() == test.getLineNumber()))
+        // System.out.println(identifier + " " + code + " i" + startLine + ":" + code.getStartAtLine());
+
+        String name = code.getName().replaceAll("\\(.*", "");
+
+        // exact checking
+        if (identifier.contains(currentClass + "." + name + "("))
         {
-          String file = unit.getParent(SourceFile.class).getKey();
-          return testFile.endsWith(file);
+          result = code;
+        }
+      }
+    }
+
+    return result;
+  }
+
+  private SourceCode compareTypeAndGoOn(final SourceCode formerResult, final Class<? extends SourceCode> actualType,
+      final Class<? extends SourceCode> expectedType, final SourceCode s, final String identifier)
+  {
+    SourceCode result = formerResult;
+    if (result == null)
+    {
+      if ((actualType.equals(expectedType)))
+      {
+        String key = s.getKey();
+        if (key.equals(identifier))
+        {
+          result = s;
         }
         else
         {
-          return false;
+          result = null;
         }
-      }
-    });
-
-    if (results.size() == 0)
-    {
-      log.error("could not find : " + test);
-    }
-    else
-    {
-      if (results.size() == 1)
-      {
-        return new ArrayList<SourceCode>(results).get(0);
       }
       else
       {
-        log.error("results are more than exact one, so filter is not sharp enough for test: " + test);
+        if (s.getChildren() != null)
+        {
+          for (SourceCode child : s.getChildren())
+          {
+            if (result == null)
+            {
+              result = findSourcecode(child, expectedType, identifier, child.getStartAtLine());
+            }
+          }
+        }
       }
     }
-    return null;
+    return result;
   }
 }

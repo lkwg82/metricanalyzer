@@ -1,73 +1,94 @@
 package de.lgohlke.io;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.DirectoryWalker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOCase;
-import org.apache.commons.io.filefilter.FileFilterUtils;
-import org.apache.commons.io.filefilter.HiddenFileFilter;
-import org.apache.commons.io.filefilter.IOFileFilter;
-
-/**
- * <p>
- * JavaSourceFileFinder class.
- * </p>
- * 
- * @author lars
- * @version $Id: $
- */
-@Slf4j
-@RequiredArgsConstructor
 public class JavaSourceFileFinder
 {
-  private Set<IFileVisitor> visitors = new TreeSet<IFileVisitor>();
+  private static Logger      log        = LoggerFactory.getLogger(JavaSourceFileFinder.class);
+  private final List<String> pathList   = new ArrayList<String>();
 
-  /**
-   * <p>
-   * scan.
-   * </p>
-   */
-  public JavaSourceFileFinder scanDirectory(final File file)
+  private final Set<File>    sourceList = new TreeSet<File>();
+
+  public List<String> getPathList()
   {
-
-    if (file.isDirectory())
-    {
-      IOFileFilter fileFilter = FileFilterUtils.and(//
-          HiddenFileFilter.VISIBLE, //
-          FileFilterUtils.fileFileFilter(),//
-          FileFilterUtils.suffixFileFilter("java", IOCase.INSENSITIVE)//
-          );
-      IOFileFilter directoryFilter = FileFilterUtils.and(HiddenFileFilter.VISIBLE, FileFilterUtils.directoryFileFilter());
-      List<File> files = new ArrayList<File>(FileUtils.listFiles(file, fileFilter, directoryFilter));
-
-      for (File f : files)
-      {
-        for (IFileVisitor visitor : visitors)
-        {
-          visitor.visit(f);
-        }
-      }
-    }
-    else
-    {
-
-    }
-    return this;
+    return pathList;
   }
 
-  public JavaSourceFileFinder addVisitor(final IFileVisitor iFileVisitor)
+  public void scan()
   {
-    if (!visitors.add(iFileVisitor))
+    JavaDirectoryWalker walker = new JavaDirectoryWalker();
+
+    List<String> pathsToVisit = new ArrayList<String>();
+    pathsToVisit.addAll(pathList);
+
+    for (String root : pathsToVisit)
     {
-      log.warn("visitor already set : " + iFileVisitor);
+      walker.setRootPath(root);
+      getSourceList().addAll(walker.getFiles());
     }
-    return this;
+
+  }
+
+  public Set<File> getSourceList()
+  {
+    return sourceList;
+  }
+
+  private static class JavaDirectoryWalker extends DirectoryWalker<File>
+  {
+    private String rootPath;
+
+    public List<File> getFiles()
+    {
+      List<File> files = new ArrayList<File>();
+
+      File directory = new File(rootPath);
+
+      try
+      {
+        walk(directory, files);
+      }
+      catch (IOException e)
+      {
+        log.error("Problem finding configuration files!", e);
+      }
+
+      return files;
+    }
+
+    public void setRootPath(final String rootPath)
+    {
+      this.rootPath = rootPath;
+    }
+
+    public String getRootPath()
+    {
+      return rootPath;
+    }
+
+    @Override
+    protected boolean handleDirectory(final File directory, final int depth, final Collection<File> results) throws IOException
+    {
+      return !directory.getName().startsWith(".");
+    }
+
+    @Override
+    protected void handleFile(final File file, final int depth, final Collection<File> results) throws IOException
+    {
+      if (file.getCanonicalPath().matches(".*\\.java"))
+      {
+        results.add(file);
+      }
+    }
   }
 }

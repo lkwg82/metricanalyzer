@@ -6,12 +6,6 @@ import java.util.List;
 
 import org.apache.commons.math.stat.descriptive.DescriptiveStatistics;
 
-/**
- * <p>DISTANCE_RULE class.</p>
- *
- * @author lars
- * @version $Id: $
- */
 public enum DISTANCE_RULE
 {
   FIRST
@@ -19,7 +13,7 @@ public enum DISTANCE_RULE
     @Override
     public String chooseAst(final String currentClass, final List<String> typeSet)
     {
-      return !typeSet.isEmpty() ? typeSet.get(0) : null;
+      return typeSet.size() > 0 ? typeSet.get(0) : null;
     }
   },
   LOWEST
@@ -27,7 +21,7 @@ public enum DISTANCE_RULE
     @Override
     public String chooseAst(final String currentClass, final List<String> typeSet)
     {
-      return !typeSet.isEmpty() ? typeSet.get(new StatsHelper(currentClass, typeSet).findLowest()) : null;
+      return typeSet.size() > 0 ? typeSet.get(new StatsHelper(currentClass, typeSet).findLowest()) : null;
     }
   },
   HIGHEST
@@ -35,7 +29,7 @@ public enum DISTANCE_RULE
     @Override
     public String chooseAst(final String currentClass, final List<String> typeSet)
     {
-      return !typeSet.isEmpty() ? typeSet.get(new StatsHelper(currentClass, typeSet).findHighest()) : null;
+      return typeSet.size() > 0 ? typeSet.get(new StatsHelper(currentClass, typeSet).findHighest()) : null;
     }
   },
   GEOMETRIC_MEAN
@@ -43,7 +37,7 @@ public enum DISTANCE_RULE
     @Override
     public String chooseAst(final String currentClass, final List<String> typeSet)
     {
-      return !typeSet.isEmpty() ? typeSet.get(new StatsHelper(currentClass, typeSet).findGeometricMean()) : null;
+      return typeSet.size() > 0 ? typeSet.get(new StatsHelper(currentClass, typeSet).findGeometricMean()) : null;
     }
   },
   ARITHMETIC_MEAN
@@ -51,18 +45,11 @@ public enum DISTANCE_RULE
     @Override
     public String chooseAst(final String currentClass, final List<String> typeSet)
     {
-      return !typeSet.isEmpty() ? typeSet.get(new StatsHelper(currentClass, typeSet).findMean()) : null;
+      return typeSet.size() > 0 ? typeSet.get(new StatsHelper(currentClass, typeSet).findMean()) : null;
     }
   };
   // FIRST_MAX;
 
-  /**
-   * <p>chooseAst.</p>
-   *
-   * @param currentClass a {@link java.lang.String} object.
-   * @param typeSet a {@link java.util.List} object.
-   * @return a {@link java.lang.String} object.
-   */
   public abstract String chooseAst(final String currentClass, List<String> typeSet);
 
   private static class StatsHelper

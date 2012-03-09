@@ -2,10 +2,6 @@ package de.lgohlke.AST.visitors;
 
 import java.io.PrintStream;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-
 import org.sonar.java.ast.visitor.JavaAstVisitor;
 import org.sonar.squid.api.SourceCode;
 
@@ -13,34 +9,18 @@ import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 
 import de.lgohlke.AST.AstHelper;
-import de.lgohlke.AST.VisitorKey;
 
-/**
- * <p>
- * JavaAstVisitorHelper class.
- * </p>
- * 
- * @author lars
- * @version $Id: $
- */
-@RequiredArgsConstructor
 public class JavaAstVisitorHelper
 {
   private final PrintStream    out = System.out;
   private final JavaAstVisitor visitor;
-  @Setter
-  @Getter
   private AstHelper            asthelper;
 
-  /**
-   * <p>
-   * getCode.
-   * </p>
-   * 
-   * @param res
-   *          a {@link org.sonar.squid.api.SourceCode} object.
-   * @return a {@link java.lang.String} object.
-   */
+  public JavaAstVisitorHelper(final JavaAstVisitor visitor)
+  {
+    this.visitor = visitor;
+  }
+
   public String getCode(final SourceCode res)
   {
     StringBuffer b = new StringBuffer();
@@ -56,17 +36,6 @@ public class JavaAstVisitorHelper
     return b.toString();
   }
 
-  /**
-   * <p>
-   * getVisitorKey.
-   * </p>
-   * 
-   * @param ast
-   *          a {@link com.puppycrawl.tools.checkstyle.api.DetailAST} object.
-   * @param res
-   *          a {@link org.sonar.squid.api.SourceCode} object.
-   * @return a {@link de.lgohlke.AST.VisitorKey} object.
-   */
   public VisitorKey getVisitorKey(final DetailAST ast, final SourceCode res)
   {
     VisitorKey key = new VisitorKey();
@@ -88,10 +57,6 @@ public class JavaAstVisitorHelper
           ident = ast.findFirstToken(TokenTypes.IDENT).getText();
           key.setEndLine(ast.getLineNo());
           break;
-        case TokenTypes.ASSIGN:
-          ident = "=";
-          key.setStartLine(ast.getLineNo());
-          break;
         default:
           ident = "not handled for " + key.getAstTokenString();
           break;
@@ -103,16 +68,6 @@ public class JavaAstVisitorHelper
     return key;
   }
 
-  /**
-   * <p>
-   * showInfo.
-   * </p>
-   * 
-   * @param ast
-   *          a {@link com.puppycrawl.tools.checkstyle.api.DetailAST} object.
-   * @param res
-   *          a {@link org.sonar.squid.api.SourceCode} object.
-   */
   public void showInfo(final DetailAST ast, final SourceCode res)
   {
     VisitorKey key = getVisitorKey(ast, res);
@@ -129,5 +84,15 @@ public class JavaAstVisitorHelper
     out.println(code);
     out.println("--------------------------------");
 
+  }
+
+  public void setAsthelper(final AstHelper asthelper)
+  {
+    this.asthelper = asthelper;
+  }
+
+  public AstHelper getAsthelper()
+  {
+    return asthelper;
   }
 }

@@ -2,24 +2,15 @@ package de.lgohlke.syntaxhighlighter;
 
 import de.lgohlke.io.bo.TestMethod;
 
-/**
- * <p>CodeDocumentHelper class.</p>
- *
- * @author lars
- * @version $Id: $
- */
 public class CodeDocumentHelper
 {
 
   /**
-   * <p>getFormattedCode.</p>
-   *
-   * @param test a {@link de.lgohlke.io.bo.TestMethod} object.
-   * @param highlightLine a int.
+   * @param test
+   * @param highlightLine
    * @param showBeforeAndAfter
    *          lines before and after
-   * @param startLineCount a int.
-   * @return a {@link java.lang.String} object.
+   * @return
    */
   public String getFormattedCode(final TestMethod test, final int highlightLine, final int showBeforeAndAfter, final int startLineCount)
   {

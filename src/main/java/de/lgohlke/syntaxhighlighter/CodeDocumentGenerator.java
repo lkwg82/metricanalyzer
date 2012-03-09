@@ -1,106 +1,86 @@
 package de.lgohlke.syntaxhighlighter;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 
-import lombok.Data;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
-
-import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.NullArgumentException;
-import org.picocontainer.MutablePicoContainer;
-import org.sonar.squid.Squid;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.sonar.squid.api.SourceCode;
+import org.sonar.squid.api.SourceProject;
 import org.sonar.squid.measures.Metric;
 import org.sonar.squid.measures.MetricDef;
 
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
-import com.thoughtworks.qdox.model.JavaMethod;
 
-import de.lgohlke.AnalysisTestFilter;
-import de.lgohlke.CommonStore;
 import de.lgohlke.AST.ASTMetrics;
 import de.lgohlke.AST.Registry;
-import de.lgohlke.AST.VisitorKey;
+import de.lgohlke.AST.visitors.VisitorKey;
 import de.lgohlke.analyzer.MetricsWorthToAnalyze;
 import de.lgohlke.analyzer.SourceCodeFinder;
-import de.lgohlke.analyzer.sorting.StandardTestOrder;
-import de.lgohlke.analyzer.sorting.TestAnalysisOrderer;
 import de.lgohlke.concurrent.ThreadPool;
-import de.lgohlke.failedTestsfilter.FailedTest;
-import de.lgohlke.io.RelatedTestsFinder;
-import de.lgohlke.io.TestmethodContext;
-import de.lgohlke.io.TestmethodContextFactory;
+import de.lgohlke.io.JavaTestClassFinder;
 import de.lgohlke.io.bo.TestClass;
 import de.lgohlke.io.bo.TestMethod;
-import de.lgohlke.qdox.JavaMethodHashed;
 
 /**
  * creates the code documentation
  * 
  * @author lars
- * @version $Id: $
  */
-@Slf4j
 public class CodeDocumentGenerator
 {
-  private final MutablePicoContainer   pico;
+  private final static Logger       log           = LoggerFactory.getLogger(CodeDocumentGenerator.class);
 
-  @Getter
-  @Setter
-  private File                         resourcePath;
-  @Getter
-  @Setter
-  private File                         targetDirectory;
+  private File                      resourcePath;
+  private File                      targetDirectory;
+  private final JavaTestClassFinder finder;
 
-  private static final String          subDirClasses       = "classes";
-  private static final String          subDirMethods       = "testmethods";
-  private static final String          subDirMethodsSource = "testmethodsSource";
+  private static final String       subDirClasses = "classes";
+  private static final String       subDirMethods = "testmethods";
 
-  private final ThreadPool             writerQueue         = new ThreadPool(1);
-  private final ThreadPool             workerPool          = ThreadPool.getInstance();
+  private final ThreadPool          writerQueue   = new ThreadPool(1);
+  private final ThreadPool          workerPool    = ThreadPool.getInstance();
+  private final CodeDocumentHelper  helper        = new CodeDocumentHelper();
 
-  private final CommonStore            store;
+  private final SourceProject       project;
 
-  private final Squid                  squid;
-
-  @Setter
-  private AnalysisTestFilter           analysisTestFilter;
-
-  private HashMap<String, Set<String>> failedTests;
-  Map<String, SourceCode>              test2code           = new HashMap<String, SourceCode>();
-
-  public CodeDocumentGenerator(final MutablePicoContainer pico, final Squid squid)
+  public CodeDocumentGenerator(final JavaTestClassFinder finder, final SourceProject project)
   {
-    this.pico = pico;
-    this.squid = squid;
-
-    store = pico.getComponent(CommonStore.class);
+    this.finder = finder;
+    this.project = project;
   }
 
-  /**
-   * <p>
-   * generate.
-   * </p>
-   * 
-   * @param registry
-   *          a {@link de.lgohlke.AST.Registry} object.
-   * @throws Exception
-   */
-  public void generate(final Registry registry) throws Exception
+  public void setResourcePath(final File resourcePath)
+  {
+    this.resourcePath = resourcePath;
+  }
+
+  public File getResourcePath()
+  {
+    return resourcePath;
+  }
+
+  public void setTargetDirectory(final File targetDirectory)
+  {
+    this.targetDirectory = targetDirectory;
+  }
+
+  public File getTargetDirectory()
+  {
+    return targetDirectory;
+  }
+
+  public void generate(final Registry registry) throws IOException
   {
     if (resourcePath == null)
     {
@@ -112,93 +92,30 @@ public class CodeDocumentGenerator
       throw new NullArgumentException("targetDirectory");
     }
 
-    failedTests = new HashMap<String, Set<String>>();
-    fillLocalFailedTestsList();
-    fillMapTest2Code();
-    List<FailedTest> orderedFailedTests = getOrderedFailedTests();
-
     initTargetDirectory();
+
+    if (finder.getTestClasses().size() == 0)
+    {
+      log.info("running finder scan()");
+      finder.scan();
+    }
 
     log.info("generating files per class");
     generateSimpleFilePerClass();
 
     log.info("generating files per testmethod");
-    generateFilePerTestMethod(registry);
-
-    generateTestOrderList(orderedFailedTests);
+    generateSimpleFilePerTestMethod(registry);
 
     workerPool.waitForShutdown();
-
-    for (Exception e : workerPool.getExceptions())
-    {
-      throw e;
-    }
 
     generateOverviewForTests();
     writerQueue.waitForShutdown();
     log.info("complete");
   }
 
-  private void generateTestOrderList(final List<FailedTest> orderedFailedTests)
-  {
-    final File file = new File(targetDirectory.getAbsolutePath() + "/orderedList.html");
-
-    final TestOverviewTable table = new TestOverviewTable(2);
-
-    table.headCell("name").headCell("score");
-
-    for (FailedTest test : orderedFailedTests)
-    {
-      table.cell(test.getClazz() + "#" + test.getMethod());
-
-      SourceCode code = test2code.get(test.getClazz() + "#" + test.getMethod());
-      //      int score =0;
-      table.cell( new StandardTestOrder().weightMetric(code) +"");
-    }
-    writerQueue.submit(new Runnable()
-    {
-
-      @Override
-      public void run()
-      {
-        try
-        {
-          FileUtils.writeStringToFile(file, table.toString());
-        }
-        catch (IOException e)
-        {
-          e.printStackTrace();
-        }
-
-      }
-    });
-  }
-
-  private List<FailedTest> getOrderedFailedTests() throws ConfigurationException, IOException
-  {
-    return TestAnalysisOrderer.useMap(test2code).orderWith(new StandardTestOrder());
-  }
-
-  private void fillLocalFailedTestsList() throws IOException, ConfigurationException
-  {
-    if ((analysisTestFilter != null) && analysisTestFilter.isActive())
-    {
-      for (FailedTest test : analysisTestFilter.getFilter().getFailedTests())
-      {
-        if (!failedTests.containsKey(test.getClazz()))
-        {
-          failedTests.put(test.getClazz(), new HashSet<String>());
-        }
-        failedTests.get(test.getClazz()).add(test.getMethod());
-      }
-    }
-  }
-
   private void generateOverviewForTests()
   {
     final File file = new File(targetDirectory.getAbsolutePath() + "/tests.html");
-    final File csv = new File(targetDirectory.getAbsolutePath() + "/tests.csv");
-    final StringBuffer b = new StringBuffer();
     final CodeDocument document = new CodeDocument().baseDirectory(".").title("Overview");
 
     // for (int i = 0; i < 15; i++)
@@ -206,194 +123,132 @@ public class CodeDocumentGenerator
     // document.text("<div><p>&nbsp;</p></div>");
     // }
 
-    HtmlTable table = new TestOverviewTable(2 + MetricsWorthToAnalyze.LIST.size());
+    HtmlTable table = new TestOverviewTable(1 + MetricsWorthToAnalyze.LIST.size());
     {
       table.setStyle("width:40% !important;");
       // table.setColumnStyle("<col style=\"width:70%\"/><col span=\"15\" style=\"width:15px\"/>");
     }
     // header
-    table.headCell("test");
-    b.append("test");
+    table.cell("test");
     for (MetricDef m : MetricsWorthToAnalyze.LIST)
     {
       // String[] splitted = m.getName().split("");
       // String joined = StringUtils.join(splitted, "</br>");
 
-      table.headCell("<div><span style=\"width:40px;\">" + m.getName() + "</span></div>");
-
-      b.append("|" + m.getName());
+      table.cell("<div><span>" + m.getName() + "</span></div>");
     }
 
-    table.headCell("<div><span style=\"width:40px;\">testOrderScore</span></div>");
-
-    b.append('\n');
-
-    for (Entry<String, SourceCode> entry : test2code.entrySet())
+    for (TestClass clazz : finder.getTestClasses())
     {
-      if (entry.getValue() == null)
+      if (log.isDebugEnabled())
       {
-        log.error("code was null for " + entry.getKey());
+        log.debug("generating for TestClass " + clazz);
       }
-      else
-      {
-        // alway <class>#<method>
-        String[] parts= entry.getKey().split("#");
-        String clazz = parts[0].replaceFirst("#", ".");
-        String test= parts[1];
 
-        String link = clazz + "#" + test;
+      for (TestMethod test : clazz.getTests())
+      {
+        SourceCode code = new SourceCodeFinder(project).findSourceCodeFor(test);
+
+        String link = test.getMethod().toString();
         link = link.replaceFirst("\\(.*", "");
         link = link.replaceAll(".*\\ ", "");
-        //        String linkText = StringUtils.reverse(StringUtils.reverse(link).replaceFirst("\\.", "#"));
-        String linkText = link;
-        table.cell("<a href=\"testmethods/" + linkText.replaceAll("#", "%23") + "().html\">" + linkText + "</a>");
-        b.append(test);
+        String linkText = StringUtils.reverse(StringUtils.reverse(link).replaceFirst("\\.", "#"));
+        table.cell("<a href=\"testmethods/" + linkText.replace("#", "%23") + "().html\">" + linkText + "</a>");
         for (MetricDef metric : MetricsWorthToAnalyze.LIST)
         {
-          String metricFormatted = new MetricFormatter(metric, entry.getValue()).toString();
-          table.cell(metricFormatted);
-          b.append("|" + metricFormatted);
+          table.cell(String.valueOf(code.getDouble(metric)));
         }
-
-        table.cell(new StandardTestOrder().weightMetric(entry.getValue()) +"");
       }
-      b.append('\n');
     }
 
-    document.text("<div id=\"metricHint\" name=\"" + subDirMethodsSource + "\"></div>");
-    document.text("<div id=\"inlinesource\"></div>");
     document.text(table.toString());
 
-    writerQueue.submit(new RunnableDocumentWriter(document, file));
     writerQueue.submit(new Runnable()
     {
-
-      @Override
       public void run()
       {
         try
         {
-          FileUtils.writeStringToFile(csv, b.toString());
+          document.writeToFile(file);
         }
         catch (IOException e)
         {
-          e.printStackTrace();
+          log.error(e.getMessage(), e);
         }
-
       }
     });
   }
 
-  /**
-   * 
-   */
-  private void fillMapTest2Code()
-  {
-    for (TestClass clazz : store.getTestClasses())
-    {
-      String _clazz = clazz.getClazz().getFullyQualifiedName();
-      if (failedTests.isEmpty() || failedTests.containsKey(_clazz))
-      {
-        if (log.isDebugEnabled())
-        {
-          log.debug("generating for TestClass " + clazz);
-        }
-
-        for (TestMethod test : clazz.getTests())
-        {
-          String method = test.getMethod().getName();
-          if (failedTests.isEmpty() || failedTests.get(_clazz).contains(method))
-          {
-            SourceCode code = new SourceCodeFinder(squid).findSourceCodeFor(test.getMethod());
-
-            String key = _clazz + "#" + method;
-            test2code.put(key, code);
-          }
-        }
-      }
-    }
-  }
-
-  private void generateFilePerTestMethod(final Registry registry) throws IOException
+  private void generateSimpleFilePerTestMethod(final Registry registry) throws IOException
   {
     String baseDir = targetDirectory.getAbsolutePath() + "/" + subDirMethods;
-    String baseDirSource = targetDirectory.getAbsolutePath() + "/" + subDirMethodsSource;
 
-    for (TestClass clazz : store.getTestClasses())
+    for (TestClass clazz : finder.getTestClasses())
     {
-      String _clazz = clazz.getClazz().getFullyQualifiedName();
-      if (failedTests.isEmpty() || failedTests.containsKey(_clazz))
+      if (log.isDebugEnabled())
       {
-        if (log.isDebugEnabled())
-        {
-          log.debug("generating for TestClass " + clazz);
-        }
+        log.debug("generating for TestClass " + clazz);
+      }
 
-        for (TestMethod test : clazz.getTests())
-        {
-          String method = test.getMethod().getName();
-          if (failedTests.isEmpty() || failedTests.get(_clazz).contains(method))
-          {
-            log.info("generating docs for " + test);
-            // documents with detailed information
-            workerPool.submit(createDocumentJob(new DocumentJobconfiguration(clazz, test, registry, baseDir, pico)));
-            // documents for the overlay
-            workerPool.submit(createSimpleDocumentJob(new DocumentJobconfiguration(clazz, test, registry, baseDirSource, pico)));
-          }
-        }
+      for (TestMethod test : clazz.getTests())
+      {
+        workerPool.submit(createDocumentJob(clazz, test, registry, baseDir));
       }
     }
   }
 
-  @Data
-  @RequiredArgsConstructor
-  class DocumentJobconfiguration
-  {
-    private final TestClass            clazz;
-    private final TestMethod           test;
-    private final Registry             registry;
-    private final String               baseDir;
-    private final MutablePicoContainer pico;
-  }
-
-  private Runnable createSimpleDocumentJob(final DocumentJobconfiguration c)
+  private Runnable createDocumentJob(final TestClass clazz, final TestMethod test, final Registry registry, final String baseDir)
   {
     return new Runnable()
     {
 
-      @Override
       public void run()
       {
 
         if (log.isDebugEnabled())
         {
-          log.debug("generating simplecode for " + c.test);
+          log.debug("generating for " + test);
         }
 
-        String title = c.clazz.getClazz().getFullyQualifiedName();
-        String tempTitle = title + "#" + c.test.getMethod().getCallSignature();
-        final File html = new File(c.baseDir + "/" + tempTitle + ".html");
+        String title = clazz.getClazz().getFullyQualifiedName();
+        String tempTitle = title + "#" + test.getMethod().getCallSignature();
+        final File html = new File(baseDir + "/" + tempTitle + ".html");
 
-        RelatedTestsFinder relatedTestfinder = pico.getComponent(RelatedTestsFinder.class);
-        TestmethodContext queryResult = TestmethodContextFactory.createByTest(relatedTestfinder, c.test);
+        HtmlDivTable metricTable = generateMetricTable(test, registry);
+        // HtmlTable linkTable= generateLinkTable();
 
-        final CodeDocument document = new CodeDocument();
+        HtmlDivTable link2HintTable = generateLink2HintTable(test, registry);
+        HtmlDivTable methodStatTable = generateMethodStatTable(test);
 
-        for (JavaMethodHashed method : queryResult.getRelatedMethods())
+        CodeSnippet codeSnippet = new CodeSnippet(test);
+        DivTable divTable = new DivTable().//
+            width(45, 200, 1800).//
+            cell(link2HintTable.toString()).//
+            cell(metricTable.toString() + "\n").//
+            cell(codeSnippet.toString());
+
+        CodeDocument document = new CodeDocument().//
+            title(tempTitle).//
+            baseDirectory("../").//
+            text(divTable.toString()).//
+            text(methodStatTable.toString());
+
+        int lines = test.getMethod().getSourceCode().split("\\r?\\n").length;
+        for (int i = 0; i < lines; i++)
         {
-          document.text(new CodeSnippet(method.getMethod()).toString());
+          String linkTable = generateHint(test, registry, i);
+          document = document.text(linkTable + "\n");
         }
+
+        final CodeDocument documentForWriting = new CodeDocument(document);
 
         writerQueue.submit(new Runnable()
         {
-          @Override
           public void run()
           {
             try
             {
-              document.text(new CodeSnippet(c.test).toString());
-              document.baseDirectory("..");
-              document.writeToFile(html);
+              documentForWriting.writeToFile(html);
             }
             catch (IOException e)
             {
@@ -407,367 +262,250 @@ public class CodeDocumentGenerator
 
   }
 
-  @RequiredArgsConstructor
-  static class DocumentJob implements Runnable
+  private HtmlDivTable generateMethodStatTable(final TestMethod test)
   {
-    private final DocumentJobconfiguration c;
-    private final CodeDocumentHelper       helper = new CodeDocumentHelper();
-    private final Squid                    squid;
-    private final ThreadPool               writerQueue;
-
-    private Set<MetricDef> getSetOfMetrics(final Map<VisitorKey, Map<MetricDef, Double>> measures)
+    int rows = ASTMetrics.values().length + Metric.values().length;
+    HtmlDivTable table = new HtmlDivTable(2, rows);
     {
-      Set<MetricDef> metrics = new TreeSet<MetricDef>();
-
-      for (Map<MetricDef, Double> entry : measures.values())
-      {
-        for (MetricDef m : entry.keySet())
-        {
-          metrics.add(m);
-        }
-      }
-      return metrics;
+      table.setStyle("width:30% !important;");
+      table.setColumnStyle("<col style=\"width:70%\"/><col style=\"width:30%\"/>");
     }
 
-    private HtmlDivTable generateLink2HintTable(final JavaMethod method, final Registry registry)
+    SourceCode code = new SourceCodeFinder(project).findSourceCodeFor(test);
+
+    if (code == null)
     {
-      int rows = method.getSourceCode().split("\\r?\\n").length;
-      HtmlDivTable table = new HtmlDivTable(1, rows);
+      log.error("could not find code for " + test);
+    }
+    else
+    {
 
-      Map<VisitorKey, Map<MetricDef, Double>> measures = getMeasuresForThisTest(method, registry);
+      table.cell("Metrik");
+      table.cell("Value");
 
-      for (int line = -1; line < (rows - 1); line++)
+      for (MetricDef metric : MetricsWorthToAnalyze.LIST)
       {
-        boolean found = false;
-        int actualLine = line + method.getLineNumber() + 1;
-        for (Entry<VisitorKey, Map<MetricDef, Double>> entry : measures.entrySet())
-        {
-          if (entry.getKey().getStartLine() == actualLine)
-          {
-            found = true;
-          }
-        }
-
-        if (found)
-        {
-          String link = String.format("<a href=\"#hint%d\">info</a>", line + 1);
-          table.cell(link);
-        }
-        else
-        {
-          table.cell("&nbsp;");
-        }
+        table.cell(metric.toString());
+        table.cell(String.valueOf(code.getDouble(metric)));
       }
-
-      return table;
     }
 
-    private HtmlDivTable generateMethodStatTable(final JavaMethod method)
+    return table;
+  }
+
+  private HtmlDivTable generateLink2HintTable(final TestMethod test, final Registry registry)
+  {
+    int rows = test.getMethod().getSourceCode().split("\\r?\\n").length;
+    HtmlDivTable table = new HtmlDivTable(1, rows);
+
+    Map<VisitorKey, Map<MetricDef, Double>> measures = getMeasuresForThisTest(test, registry);
+
+    for (int line = 0; line < rows; line++)
     {
-      int rows = ASTMetrics.values().length + Metric.values().length;
-      HtmlDivTable table = new HtmlDivTable(2, rows);
-      {
-        table.setStyle("width:30% !important;");
-        table.setColumnStyle("<col style=\"width:70%\"/><col style=\"width:30%\"/>");
-      }
-
-      SourceCode code = new SourceCodeFinder(squid).findSourceCodeFor(method);
-
-      if (code == null)
-      {
-        log.error("could not find code for " + method);
-        // new ProjectPrinter(project).print();
-      }
-      else
-      {
-
-        table.cell("Metrik");
-        table.cell("Value");
-
-        for (MetricDef metric : MetricsWorthToAnalyze.LIST)
-        {
-          table.cell(metric.toString());
-          table.cell(String.valueOf(code.getDouble(metric)));
-        }
-      }
-
-      return table;
-    }
-
-    private String generateHint(final TestMethod test, final Registry registry, final int line)
-    {
-      StringBuffer b = new StringBuffer();
-
-      Map<VisitorKey, Map<MetricDef, Double>> measures = getMeasuresForThisTest(test.getMethod(), registry);
-
-      int actualLine = line + test.getMethod().getLineNumber();
+      boolean found = false;
+      int actualLine = line + test.getMethod().getLineNumber() + 1;
       for (Entry<VisitorKey, Map<MetricDef, Double>> entry : measures.entrySet())
       {
         if (entry.getKey().getStartLine() == actualLine)
         {
-          b.append("<div class=\"hint\">");
-          b.append(String.format("<a name=\"hint%d\"></a>", line));
-          b.append("<b>Line:</b> ");
-          b.append(actualLine);
-          b.append("<b>Token:</b> ");
-          b.append(entry.getKey().getAstTokenString());
-          b.append("<b>identifier:</b> ");
-          b.append(entry.getKey().getIdentifier());
+          found = true;
+        }
+      }
+
+      if (found)
+      {
+        String link = String.format("<a href=\"#hint%d\">info</a>", line + 1);
+        table.cell(link);
+      }
+      else
+      {
+        table.cell("&nbsp;");
+      }
+    }
+
+    return table;
+  }
+
+  private String generateHint(final TestMethod test, final Registry registry, final int line)
+  {
+    StringBuffer b = new StringBuffer();
+
+    Map<VisitorKey, Map<MetricDef, Double>> measures = getMeasuresForThisTest(test, registry);
+
+    int actualLine = line + test.getMethod().getLineNumber();
+    for (Entry<VisitorKey, Map<MetricDef, Double>> entry : measures.entrySet())
+    {
+      if (entry.getKey().getStartLine() == actualLine)
+      {
+        b.append("<div class=\"hint\">");
+        b.append(String.format("<a name=\"hint%d\"></a>", line));
+        b.append("<b>Line:</b> ");
+        b.append(actualLine);
+        b.append("<b>Token:</b> ");
+        b.append(entry.getKey().getAstTokenString());
+        b.append("<b>identifier:</b> ");
+        b.append(entry.getKey().getIdentifier());
+        b.append("<br/>");
+        for (Entry<MetricDef, Double> measure : entry.getValue().entrySet())
+        {
+          b.append("<div class=\"metric\">");
+          b.append("metric: ");
+          b.append(measure.getKey());
+          b.append(" &nbsp; &nbsp; ");
+          b.append("value: ");
+          b.append(measure.getValue());
           b.append("<br/>");
-          for (Entry<MetricDef, Double> measure : entry.getValue().entrySet())
+
+          int showLinesAround = 2;
+          String code = helper.getFormattedCode(test, actualLine, showLinesAround, actualLine - showLinesAround);
+          b.append(code);
+
+          if (registry.getDescription().containsKey(entry.getKey()) && registry.getDescription().get(entry.getKey()).containsKey(measure.getKey()))
           {
-            b.append("<div class=\"metric\">");
-            b.append("metric: ");
-            b.append(measure.getKey());
-            b.append(" &nbsp; &nbsp; ");
-            b.append("value: ");
-            b.append(measure.getValue());
-            b.append("<br/>");
-
-            int showLinesAround = 2;
-            String code = helper.getFormattedCode(test, actualLine, showLinesAround, actualLine - showLinesAround);
-            b.append(code);
-
-            if (registry.getDescription().containsKey(entry.getKey()) && registry.getDescription().get(entry.getKey()).containsKey(measure.getKey()))
-            {
-              b.append("<div class=\"description\">");
-              b.append("<fieldset>");
-              b.append("<legend>calculator description</legend>");
-              b.append(registry.getDescription().get(entry.getKey()).get(measure.getKey()));
-              b.append("</fieldset>");
-              b.append("</div>");
-            }
-
+            b.append("<div class=\"description\">");
+            b.append("<fieldset>");
+            b.append("<legend>calculator description</legend>");
+            b.append(registry.getDescription().get(entry.getKey()).get(measure.getKey()));
+            b.append("</fieldset>");
             b.append("</div>");
           }
+
           b.append("</div>");
         }
+        b.append("</div>");
       }
-
-      return b.toString();
     }
 
-    private Map<VisitorKey, Map<MetricDef, Double>> getMeasuresForThisTest(final JavaMethod test, final Registry registry)
+    return b.toString();
+  }
+
+  private HtmlDivTable generateMetricTable(final TestMethod test, final Registry registry)
+  {
+
+    int linesOfCode = test.getMethod().getSourceCode().split("\\r?\\n").length + 2;
+    Map<VisitorKey, Map<MetricDef, Double>> measures = getMeasuresForThisTest(test, registry);
+    Set<MetricDef> metrics = getSetOfMetrics(measures);
+
+    HtmlDivTable metricTable = new HtmlDivTable(metrics.size(), 1 + linesOfCode);
+
+    fillMetricTable(metricTable, metrics, measures, linesOfCode, test.getMethod().getLineNumber());
+
+    return metricTable;
+  }
+
+  private void fillMetricTable(final HtmlDivTable metricTable, final Set<MetricDef> metrics, final Map<VisitorKey, Map<MetricDef, Double>> measures,
+      final int linesOfCode, final int startline)
+  {
+    MetricDef[] metricArray = metrics.toArray(new MetricDef[metrics.size()]);
+    Double[] values = new Double[metricArray.length * linesOfCode];
+
+    for (int i = 0; i < values.length; i++)
     {
-      String file = test.getSource().getURL().getFile();
-      String testname = test.getName();
+      values[i] = 0D;
+    }
 
-      Map<VisitorKey, Map<MetricDef, Double>> result = new HashMap<VisitorKey, Map<MetricDef, Double>>();
-      int firstLine = test.getLineNumber();
-      int lastLine = 0;
+    for (int i = 0; i < values.length; i++)
+    {
+      int col = i % metricArray.length;
+      int row = (int) Math.floor(i / (double) metricArray.length);
 
-      List<VisitorKey> metricsInThisFile = new ArrayList<VisitorKey>();
+      MetricDef currentMetric = metricArray[col];
 
-      for (Entry<VisitorKey, String[]> entry : registry.getCode().entrySet())
+      int codeLine = (row + startline + 1);
+      for (Entry<VisitorKey, Map<MetricDef, Double>> entry : measures.entrySet())
       {
         VisitorKey key = entry.getKey();
-        if (key.getFilename().equals(file))
+        if (key.getStartLine() == codeLine)
         {
-          if ((key.getAstToken() == TokenTypes.METHOD_DEF) && key.getIdentifier().equals(testname) && (key.getStartLine() == firstLine))
+          Double v = entry.getValue().get(currentMetric);
+          if (v != null)
           {
-            lastLine = key.getEndLine();
-          }
-
-          metricsInThisFile.add(key);
-        }
-      }
-
-      // filter only metrics according to this test
-      for (VisitorKey key : metricsInThisFile)
-      {
-        if ((key.getStartLine() >= firstLine) && (key.getEndLine() <= lastLine) && registry.getMetricPerLineMap().containsKey(key))
-        {
-          Map<MetricDef, Double> value = registry.getMetricPerLineMap().get(key);
-          result.put(key, value);
-        }
-      }
-
-      return result;
-    }
-
-    private HtmlDivTable generateMetricTable(final JavaMethod method, final Registry registry)
-    {
-
-      int linesOfCode = method.getSourceCode().split("\\r?\\n").length + 2;
-      Map<VisitorKey, Map<MetricDef, Double>> measures = getMeasuresForThisTest(method, registry);
-      Set<MetricDef> metrics = getSetOfMetrics(measures);
-
-      HtmlDivTable metricTable = new HtmlDivTable(metrics.size(), 1 + linesOfCode);
-
-      fillMetricTable(metricTable, metrics, measures, linesOfCode, method.getLineNumber());
-
-      return metricTable;
-    }
-
-    private void fillMetricTable(final HtmlDivTable metricTable, final Set<MetricDef> metrics, final Map<VisitorKey, Map<MetricDef, Double>> measures,
-        final int linesOfCode, final int startline)
-    {
-      MetricDef[] metricArray = metrics.toArray(new MetricDef[metrics.size()]);
-      Double[] values = new Double[metricArray.length * linesOfCode];
-
-      for (int i = 0; i < values.length; i++)
-      {
-        values[i] = 0D;
-      }
-
-      for (int i = 0; i < values.length; i++)
-      {
-        int col = i % metricArray.length;
-        int row = (int) Math.floor(i / (double) metricArray.length);
-
-        MetricDef currentMetric = metricArray[col];
-
-        int codeLine = (row + startline + 1);
-        for (Entry<VisitorKey, Map<MetricDef, Double>> entry : measures.entrySet())
-        {
-          VisitorKey key = entry.getKey();
-          if ((key.getStartLine() + 1) == codeLine)
-          {
-            Double v = entry.getValue().get(currentMetric);
-            if (v != null)
-            {
-              values[i] += v;
-            }
+            values[i] += v;
           }
         }
-
-        metricTable.cell(values[i].toString());
       }
 
-      for (MetricDef m : metricArray)
-      {
-        metricTable.cell(((ASTMetrics) m).getShortName());
-      }
-
+      metricTable.cell(values[i].toString());
     }
 
-    @Override
-    public void run()
+    for (MetricDef m : metricArray)
     {
+      metricTable.cell(((ASTMetrics) m).getShortName());
+    }
 
-      if (log.isDebugEnabled())
+  }
+
+  private Set<MetricDef> getSetOfMetrics(final Map<VisitorKey, Map<MetricDef, Double>> measures)
+  {
+    Set<MetricDef> metrics = new TreeSet<MetricDef>();
+
+    for (Map<MetricDef, Double> entry : measures.values())
+    {
+      for (MetricDef m : entry.keySet())
       {
-        log.debug("generating for " + c.test);
+        metrics.add(m);
       }
+    }
+    return metrics;
+  }
 
-      String title = c.clazz.getClazz().getFullyQualifiedName();
-      String tempTitle = title + "#" + c.test.getMethod().getCallSignature();
-      final File html = new File(c.baseDir + "/" + tempTitle + ".html");
+  private Map<VisitorKey, Map<MetricDef, Double>> getMeasuresForThisTest(final TestMethod test, final Registry registry)
+  {
+    String file = test.getMethod().getSource().getURL().getFile();
+    String testname = test.getMethod().getName();
 
-      List<JavaMethod> tests = new ArrayList<JavaMethod>();
-      tests.add(c.test.getMethod());
-      { // adding related tests
-        RelatedTestsFinder relatedTestfinder = c.pico.getComponent(RelatedTestsFinder.class);
-        TestmethodContext queryResult = TestmethodContextFactory.createByTest(relatedTestfinder, c.test);
+    Map<VisitorKey, Map<MetricDef, Double>> result = new HashMap<VisitorKey, Map<MetricDef, Double>>();
+    int firstLine = test.getMethod().getLineNumber();
+    int lastLine = 0;
 
-        for (JavaMethodHashed method : queryResult.getRelatedMethods())
-        {
-          tests.add(method.getMethod());
-        }
-      }
-      CodeDocument document = new CodeDocument().//
-          title(tempTitle).//
-          baseDirectory("../");
+    List<VisitorKey> metricsInThisFile = new ArrayList<VisitorKey>();
 
-      boolean displayedForTest = false;
-      for (JavaMethod method : tests)
+    for (Entry<VisitorKey, String[]> entry : registry.getCode().entrySet())
+    {
+      VisitorKey key = entry.getKey();
+      if (key.getFilename().equals(file))
       {
-        HtmlDivTable metricTable = generateMetricTable(method, c.registry);
-        HtmlDivTable link2HintTable = generateLink2HintTable(method, c.registry);
-
-        CodeSnippet codeSnippet = new CodeSnippet(method);
-        DivTable divTable = new DivTable().//
-            width(60, 300, 1800).//
-            cell(link2HintTable.toString()).//
-            cell(metricTable.toString() + "\n").//
-            cell(codeSnippet.toString());
-
-        document.text(divTable.toString());
-
-        if (!displayedForTest)
+        if ((key.getAstToken() == TokenTypes.METHOD_DEF) && key.getIdentifier().equals(testname) && (key.getStartLine() == firstLine))
         {
-          displayedForTest = true;
-          HtmlDivTable methodStatTable = generateMethodStatTable(method);
-          document.text(methodStatTable.toString());
+          lastLine = key.getEndLine();
         }
 
+        metricsInThisFile.add(key);
       }
-
-      int lines = c.test.getMethod().getSourceCode().split("\\r?\\n").length;
-      for (int i = 0; i < lines; i++)
-      {
-        String linkTable = generateHint(c.test, c.registry, i);
-        document = document.text(linkTable + "\n");
-      }
-
-      writerQueue.submit(new RunnableDocumentWriter(document, html));
     }
-  }
 
-  @RequiredArgsConstructor
-  private static class RunnableDocumentWriter implements Runnable
-  {
-    private final CodeDocument document;
-    private final File         file;
-
-    @Override
-    public void run()
+    // filter only metrics according to this test
+    for (VisitorKey key : metricsInThisFile)
     {
-      try
+      if ((key.getStartLine() >= firstLine) && (key.getEndLine() <= lastLine) && registry.getMetricPerLineMap().containsKey(key))
       {
-        document.writeToFile(file);
+        Map<MetricDef, Double> value = registry.getMetricPerLineMap().get(key);
+        result.put(key, value);
       }
-      catch (IOException e)
-      {
-        log.error(e.getMessage(), e);
-      }
-
     }
 
+    return result;
   }
 
-  private Runnable createDocumentJob(final DocumentJobconfiguration c)
-  {
-    return new DocumentJob(c, squid, writerQueue);
-  }
-
-  private void generateSimpleFilePerClass() throws IOException, ConfigurationException
+  private void generateSimpleFilePerClass() throws IOException
   {
     String baseDir = targetDirectory.getAbsolutePath() + "/" + subDirClasses;
-    for (TestClass clazz : store.getTestClasses())
+    for (TestClass clazz : finder.getTestClasses())
     {
-      if (failedTests.isEmpty() || failedTests.containsKey(clazz.getClazz().getFullyQualifiedName()))
-      {
-        String title = clazz.getClazz().getFullyQualifiedName();
-        final File html = new File(baseDir + "/" + title + ".html");
+      String title = clazz.getClazz().getFullyQualifiedName();
+      File html = new File(baseDir + "/" + title + ".html");
 
-        CodeSnippet codeSnippet = new CodeSnippet(clazz);
-        DivTable divTable = new DivTable().//
-            width(1300, 200).//
-            cell(codeSnippet.toString()).//
-            cell("test");
+      CodeSnippet codeSnippet = new CodeSnippet(clazz);
+      DivTable divTable = new DivTable().//
+          width(1300, 200).//
+          cell(codeSnippet.toString()).//
+          cell("test");
 
-        final CodeDocument document = new CodeDocument().//
-            title(title).//
-            baseDirectory("../").//
-            text(divTable.toString());//
-
-        writerQueue.submit(new Runnable()
-        {
-          @Override
-          public void run()
-          {
-            try
-            {
-              document.writeToFile(html);
-            }
-            catch (IOException e)
-            {
-              e.printStackTrace();
-            }
-          }
-        });
-      }
+      new CodeDocument().//
+          title(title).//
+          baseDirectory("../").//
+          text(divTable.toString()).//
+          writeToFile(html);
     }
   }
 
@@ -789,19 +527,13 @@ public class CodeDocumentGenerator
     File cssSourceDir = new File(resourcePath.getAbsolutePath() + "/styles");
     File cssDir = new File(targetDirectory.getAbsolutePath() + "/styles");
 
-    try
-    {
-      FileUtils.copyDirectory(scriptSourceDir, scriptDir);
-      FileUtils.copyDirectory(cssSourceDir, cssDir);
+    FileUtils.copyDirectory(scriptSourceDir, scriptDir);
+    FileUtils.copyDirectory(cssSourceDir, cssDir);
 
-      for (File myFile : FileUtils.listFiles(new File("src/main/resources"), new String[] { "css", "js" }, false))
-      {
-        FileUtils.copyFile(myFile, new File(targetDirectory.getAbsolutePath() + "/" + myFile.getName()));
-      }
-    }
-    catch (FileNotFoundException e)
+    for (File myFile : FileUtils.listFiles(new File("src/main/resources"), new String[]
+    { "css", "js" }, false))
     {
-      log.warn("could not copy scripts : " + e.getMessage());
+      FileUtils.copyFile(myFile, new File(targetDirectory.getAbsolutePath() + "/" + myFile.getName()));
     }
   }
 }

@@ -6,13 +6,6 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
-/**
- * <p>DISTANCE_RULETest class.</p>
- *
- * @author lars
- * @version $Id: $
- * @since 0.3
- */
 public class DISTANCE_RULETest
 {
   private final String     currentClass    = "de.lgohlke.test.Test";
@@ -25,45 +18,30 @@ public class DISTANCE_RULETest
   private final String[]   typeSet         = new String[]
                                            { "java.lang.String", "org.apache.TestClass", "org.apache.commons.math.stat.descriptive" };
 
-  /**
-   * <p>testDISTANCE_RULE_FIRST.</p>
-   */
   @Test
   public void testDISTANCE_RULE_FIRST()
   {
     testRule(DISTANCE_RULE.FIRST, FIRST);
   }
 
-  /**
-   * <p>testDISTANCE_RULE_LOWEST.</p>
-   */
   @Test
   public void testDISTANCE_RULE_LOWEST()
   {
     testRule(DISTANCE_RULE.LOWEST, LOWEST);
   }
 
-  /**
-   * <p>testDISTANCE_RULE_HIGHEST.</p>
-   */
   @Test
   public void testDISTANCE_RULE_HIGHEST()
   {
     testRule(DISTANCE_RULE.HIGHEST, HIGHEST);
   }
 
-  /**
-   * <p>testDISTANCE_RULE_GEOMETRIC_MEAN.</p>
-   */
   @Test
   public void testDISTANCE_RULE_GEOMETRIC_MEAN()
   {
     testRule(DISTANCE_RULE.GEOMETRIC_MEAN, GEOMETRIC_MEAN);
   }
 
-  /**
-   * <p>testDISTANCE_RULE_ARITHMETRIC_MEAN.</p>
-   */
   @Test
   public void testDISTANCE_RULE_ARITHMETRIC_MEAN()
   {

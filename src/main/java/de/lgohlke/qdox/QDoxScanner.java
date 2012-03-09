@@ -5,64 +5,86 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
+import com.thoughtworks.qdox.JavaDocBuilder;
+import com.thoughtworks.qdox.model.Annotation;
+import com.thoughtworks.qdox.model.JavaClass;
+import com.thoughtworks.qdox.model.JavaMethod;
 import com.thoughtworks.qdox.model.JavaSource;
 
-import de.lgohlke.AST.Registry;
+import de.lgohlke.io.bo.TEST_TYPE;
+import de.lgohlke.io.bo.TestClass;
+import de.lgohlke.io.bo.TestMethod;
 
-/**
- * <p>
- * QDoxScanner class.
- * </p>
- * 
- * @author lars
- * @version $Id: $
- */
-@Slf4j
-@RequiredArgsConstructor
 public class QDoxScanner
 {
-  private final Registry               registry;
-  private final List<IQDoxScanHandler> scanHandlerList = new ArrayList<IQDoxScanHandler>();
+  private final List<TestClass> results = new ArrayList<TestClass>();
+  private final File            file;
 
-  private JavaDocBuilderFascade        docBuilder;
-
-  public QDoxScanner addScanHandler(final IQDoxScanHandler handler)
+  public QDoxScanner(final File file)
   {
-    docBuilder = new JavaDocBuilderFascade(registry);
-    scanHandlerList.add(handler);
-    return this;
+    this.file = file;
+
   }
 
-  /**
-   * <p>
-   * scan.
-   * </p>
-   * 
-   * @throws java.io.IOException
-   *           if any.
-   */
-  public void scan(final File file) throws IOException
+  public void scan() throws IOException
   {
-    log.debug("scanning " + file);
-    if (file.isDirectory())
-    {
-      docBuilder.addSourceTree(file);
-    }
-    else
-    {
-      docBuilder.addSource(file);
-    }
+    JavaDocBuilder builder = new JavaDocBuilder();
+    JavaSource source = builder.addSource(file);
 
-    for (JavaSource source : docBuilder.getSources())
+    boolean foundTestImport = false;
+    for (String _import : source.getImports())
     {
-      for (IQDoxScanHandler handler : scanHandlerList)
+      if (!foundTestImport && TEST_TYPE.isTestImport(_import))
       {
-        handler.scanSource(source);
+        foundTestImport = true;
       }
     }
+
+    for (JavaClass clazz : source.getClasses())
+    {
+      TestClass testClazz = null;
+
+      for (JavaMethod method : clazz.getMethods())
+      {
+        TestMethod testMethod = null;
+
+        // System.out.println(m);
+        for (Annotation a : method.getAnnotations())
+        {
+          if (testMethod == null)
+          {
+            String type = a.getType().getFullyQualifiedName();
+            if (TEST_TYPE.isTestImport(type))
+            {
+              testMethod = new TestMethod(method);
+              testMethod.setType(TEST_TYPE.getType(type));
+            }
+          }
+        }
+
+        if (testMethod != null)
+        {
+          if (testClazz == null)
+          {
+            testClazz = new TestClass(clazz, file);
+          }
+
+          testClazz.getTests().add(testMethod);
+        }
+      }
+
+      if (testClazz != null)
+      {
+        results.add(testClazz);
+      }
+    }
+
+  }
+
+  public List<TestClass> getClasses()
+  {
+
+    return results;
   }
 
 }

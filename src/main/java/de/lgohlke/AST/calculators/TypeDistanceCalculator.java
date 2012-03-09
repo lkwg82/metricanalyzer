@@ -2,26 +2,15 @@ package de.lgohlke.AST.calculators;
 
 import org.apache.commons.lang.StringUtils;
 
-/**
- * <p>TypeDistanceCalculator class.</p>
- *
- * @author lars
- * @version $Id: $
- */
 public class TypeDistanceCalculator implements ICalculator
 {
-  // Types from java-core
-  private final static String[] packagePaths = new String[] { "java." };
-
-  private final String[]        bPath;
-  private final String[]        aPath;
-  private final StringBuffer    description  = new StringBuffer();
+  private final String[]     bPath;
+  private final String[]     aPath;
+  private final StringBuffer description = new StringBuffer();
 
   /**
-   * <p>Constructor for TypeDistanceCalculator.</p>
-   *
-   * @param a a {@link java.lang.Class} object.
-   * @param b a {@link java.lang.Class} object.
+   * @param a
+   * @param b
    */
   @SuppressWarnings("rawtypes")
   public TypeDistanceCalculator(final Class a, final Class b)
@@ -30,10 +19,8 @@ public class TypeDistanceCalculator implements ICalculator
   }
 
   /**
-   * <p>Constructor for TypeDistanceCalculator.</p>
-   *
-   * @param currentClass a {@link java.lang.String} object.
-   * @param canonicalType a {@link java.lang.String} object.
+   * @param currentClass
+   * @param canonicalType
    */
   public TypeDistanceCalculator(final String currentClass, final String canonicalType)
   {
@@ -50,11 +37,13 @@ public class TypeDistanceCalculator implements ICalculator
    * (non-Javadoc)
    * @see de.lgohlke.AST.calculators.ICalculator#calculate()
    */
-  @Override
   public Double calculate()
   {
     int result = 0;
 
+    // Types from java-core
+    String[] packagePaths = new String[]
+    { "java." };
     boolean foundTypefromJavaCore = false;
     boolean foundClassAndCorrespondingTestClass = false;
 
@@ -66,7 +55,7 @@ public class TypeDistanceCalculator implements ICalculator
     description.append("\t" + bJoinedPath + "\n");
     description.append("\n");
 
-    // test on class and corresponding test-class
+    // test on class and corresponding test-clas
     if (aPath.length == bPath.length)
     {
       int n = aPath.length - 1;
@@ -85,12 +74,12 @@ public class TypeDistanceCalculator implements ICalculator
       {
         if (!foundTypefromJavaCore)
         {
-          if ("void".equals(aJoinedPath) || aJoinedPath.startsWith(path))
+          if (aJoinedPath.equals("void") || aJoinedPath.startsWith(path))
           {
             description.append("found java core class : " + aJoinedPath + "\n");
             foundTypefromJavaCore = true;
           }
-          else if ("void".equals(bJoinedPath) || bJoinedPath.startsWith(path))
+          else if (bJoinedPath.equals("void") || bJoinedPath.startsWith(path))
           {
             description.append("found java core class : " + bJoinedPath + "\n");
             foundTypefromJavaCore = true;
@@ -131,12 +120,6 @@ public class TypeDistanceCalculator implements ICalculator
     return Double.valueOf(result);
   }
 
-  /**
-   * <p>describe.</p>
-   *
-   * @return a {@link java.lang.String} object.
-   */
-  @Override
   public String describe()
   {
     return description.toString();

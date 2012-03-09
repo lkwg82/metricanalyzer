@@ -1,41 +1,46 @@
 package de.lgohlke.io.bo;
 
-import lombok.Data;
-
 import com.thoughtworks.qdox.model.JavaMethod;
 
-/**
- * composite class for {@link com.thoughtworks.qdox.model.JavaMethod} and {@link TEST_TYPE}
- * 
- * @author lars
- * @version $Id: $
- */
-@Data
 public class TestMethod
 {
-  private final JavaMethod method;
-  private TEST_TYPE        type;
-  private final String     signature;
-  private final String     clazz;
+
+  private JavaMethod method;
+  private TEST_TYPE  type;
 
   public TestMethod(final JavaMethod method)
   {
-    this.method = method;
-    this.signature = method.getDeclarationSignature(true);
-    this.clazz = method.getParentClass().getFullyQualifiedName();
+    this.setMethod(method);
   }
 
-  /** {@inheritDoc} */
+  public final void setMethod(final JavaMethod method)
+  {
+    this.method = method;
+  }
+
+  public JavaMethod getMethod()
+  {
+    return method;
+  }
+
   @Override
   public String toString()
   {
     StringBuffer buffer = new StringBuffer();
-    buffer.append(method.getParentClass().getFullyQualifiedName());
-    buffer.append('.');
     buffer.append(method.getCallSignature());
     buffer.append("[");
     buffer.append(type);
     buffer.append("]");
     return buffer.toString();
+  }
+
+  public void setType(final TEST_TYPE type)
+  {
+    this.type = type;
+  }
+
+  public TEST_TYPE getType()
+  {
+    return type;
   }
 }

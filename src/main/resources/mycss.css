@@ -1,116 +1,82 @@
 div.MetricAnalyzer td.cell {
-	max-width: 30px;
+    max-width: 30px;
 }
 
 div.MetricAnalyzer td.cell div.metric {
-	color: black;
-	text-align: right !important;
-	padding: 0px 10px 0 2px !important
+    color: black;
+    text-align: right !important;
+    padding: 0px 10px 0 2px !important
 }
 
 div.MetricAnalyzer td.cell div.head {
-	color: black;
-	text-align: center !important;
+    color: black;
+    text-align: center !important;
 }
 
-div.hint { /*border:1px solid grey;*/
-	background-color: #dafefb;
+div.hint {
+    /*border:1px solid grey;*/
+    background-color: #dafefb;
 }
 
 div.hint b {
-	padding-left: 10px;
+    padding-left: 10px;
 }
 
 div.hint div.metric {
-	padding-left: 30px;
-	padding-top: 10px;
-	padding-bottom: 10px;
+    padding-left: 30px;
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 
 div.metric div.description {
-	white-space: pre;
+    white-space: pre;
 }
 
 div.description fieldset {
-	border-color: #cc3399;
+    border-color: #cc3399;
 }
 
 div.description fieldset legend {
-	color: navy;
+    color: navy;
 }
 
-.hover {
-	background-color: #eee;
-}
+.hover { background-color: #eee; }
+
 
 table {
-	margin: 200px 0 0 0;
+    margin:200px 0 0 0;
 }
 
 td {
-	background-color: #fff;
-	height: 18px;
-	width: 25px;
-	border: 1px solid #e5e5e5;
+    background-color:#fff;
+    height:18px;
+    width:25px;
+    border: 1px solid #e5e5e5;
 }
 
+
 td.col-0 {
-	width: 100px !important;
+    width:100px !important;
 }
 
 td:hover {
-	cursor: pointer;
+    cursor: pointer;
 }
 
 td div {
-	position: relative;
+    position:relative;
 }
 
-.header div span {
-	display: inline-block;
-	position: relative;
-	top: -00px;
-	left: 2px;
-	z-index: 100;
-	-webkit-transform: rotate(-90deg);
-	-webkit-transform-origin: 0 0;
-	-moz-transform: rotate(-90deg);
-	-moz-transform-origin: 0 0;
-	transform: rotate(90deg);
-	transform-origin: 0 0;
-}
-
-div#metricHint {
-	position: absolute;
-	top: 400px;
-	left: 1000px;
-	width: 400px;
-	z-index: 9001;
-	background-color: yellow;
-	opacity: 1;
-	display: block;
-	padding: 5px;
-}
-
-iframe#inlinesource {
-	
-}
-
-div#inlinesource {
-	position: fixed;
-	top: 0px;
-	left: 900000px;
-	width: 400px;
-	height: 500px;
-	z-index: 9000;
-}
-
-.syntaxhighlighter {
-	overflow: visible !important;
-}
-
-td.col-1,td.col-2,td.col-3,td.col-4,td.col-5,td.col-6,td.col-7,td.col-8,td.col-9,td.col-10,td.col-11,td.col-12,td.col-13,td.col-14,td.col-15,td.col-16,td.col-17,td.col-18,td.col-19,td.col-20
-	{
-	min-width: 25px;
-	text-align: right;
+.col-1 span, .col-2 span,.col-3 span, .col-4 span, .col-5 span,.col-6 span, .col-7 span, .col-8 span,.col-9 span, .col-10 span, .col-11 span,.col-12 span, .col-13 span, .col-14 span,.col-15 span, .col-16 span {
+    display:inline-block;
+    position:absolute;
+    top: -00px;
+    left:2px;
+    z-index: 100000;
+    -webkit-transform:rotate(-90deg);
+    -webkit-transform-origin: 0 0;
+    -moz-transform:rotate(-90deg);
+    -moz-transform-origin: 0 0;
+    transform:rotate(90deg);
+    transform-origin: 0 0;
 }

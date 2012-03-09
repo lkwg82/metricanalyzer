@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.thoughtworks.qdox.model.Annotation;
 import com.thoughtworks.qdox.model.JavaMethod;
 import com.thoughtworks.qdox.model.JavaSource;
 
@@ -14,9 +13,8 @@ import de.lgohlke.io.bo.TestMethod;
 
 /**
  * represents a code snippet wrapped for beeing highlight by syntaxhighlighter
- *
+ * 
  * @author lars
- * @version $Id: $
  */
 public class CodeSnippet
 {
@@ -26,10 +24,8 @@ public class CodeSnippet
   private int[]        highlightLines;
 
   /**
-   * <p>Constructor for CodeSnippet.</p>
-   *
-   * @param code a {@link java.lang.String} object.
-   * @param firstline a int.
+   * @param code
+   * @param firstline
    */
   public CodeSnippet(final String code, final int firstline)
   {
@@ -38,9 +34,7 @@ public class CodeSnippet
   }
 
   /**
-   * <p>Constructor for CodeSnippet.</p>
-   *
-   * @param code a {@link java.lang.String} object.
+   * @param code
    */
   public CodeSnippet(final String code)
   {
@@ -48,9 +42,7 @@ public class CodeSnippet
   }
 
   /**
-   * <p>Constructor for CodeSnippet.</p>
-   *
-   * @param source a {@link com.thoughtworks.qdox.model.JavaSource} object.
+   * @param source
    */
   public CodeSnippet(final JavaSource source)
   {
@@ -58,9 +50,7 @@ public class CodeSnippet
   }
 
   /**
-   * <p>Constructor for CodeSnippet.</p>
-   *
-   * @param clazz a {@link de.lgohlke.io.bo.TestClass} object.
+   * @param clazz
    */
   public CodeSnippet(final TestClass clazz)
   {
@@ -68,10 +58,8 @@ public class CodeSnippet
   }
 
   /**
-   * <p>Constructor for CodeSnippet.</p>
-   *
-   * @param test a {@link de.lgohlke.io.bo.TestMethod} object.
-   * @param firstline a int.
+   * @param test
+   * @param firstline
    */
   public CodeSnippet(final TestMethod test, final int firstline)
   {
@@ -79,33 +67,13 @@ public class CodeSnippet
   }
 
   /**
-   * <p>Constructor for CodeSnippet.</p>
-   *
-   * @param test a {@link de.lgohlke.io.bo.TestMethod} object.
+   * @param test
    */
   public CodeSnippet(final TestMethod test)
   {
-    this(test.getMethod());
-  }
-
-  /**
-   * <p>Constructor for CodeSnippet.</p>
-   *
-   * @param method a {@link com.thoughtworks.qdox.model.JavaMethod} object.
-   */
-  public CodeSnippet(final JavaMethod method)
-  {
-    firstLine = method.getLineNumber() + 1;
-
+    JavaMethod method = test.getMethod();
+    firstLine = test.getMethod().getLineNumber() + 1;
     StringBuffer b = new StringBuffer();
-
-    for (Annotation a : method.getAnnotations())
-    {
-      b.append('@');
-      b.append(a.getType().getFullyQualifiedName());
-      b.append('\n');
-    }
-
     b.append(method.getDeclarationSignature(true));
     b.append("{\n");
     b.append(method.getSourceCode());
@@ -118,7 +86,6 @@ public class CodeSnippet
    * (non-Javadoc)
    * @see java.lang.Object#toString()
    */
-  /** {@inheritDoc} */
   @Override
   public String toString()
   {
@@ -148,9 +115,7 @@ public class CodeSnippet
   }
 
   /**
-   * <p>Setter for the field <code>highlightLines</code>.</p>
-   *
-   * @param highlightLines a int.
+   * @param highlightLines
    */
   public void setHighlightLines(final int... highlightLines)
   {
@@ -158,9 +123,7 @@ public class CodeSnippet
   }
 
   /**
-   * <p>Getter for the field <code>highlightLines</code>.</p>
-   *
-   * @return an array of int.
+   * @return
    */
   public int[] getHighlightLines()
   {
