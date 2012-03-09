@@ -2,6 +2,7 @@ package de.lgohlke.io;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -27,7 +28,7 @@ import org.apache.commons.io.filefilter.IOFileFilter;
 @RequiredArgsConstructor
 public class JavaSourceFileFinder
 {
-  private Set<IFileVisitor> visitors = new TreeSet<IFileVisitor>();
+  private Set<IFileVisitor> visitors = new HashSet<IFileVisitor>();
 
   /**
    * <p>
