@@ -13,7 +13,7 @@ import de.lgohlke.AST.Registry;
  * <p>
  * SourcePathFixerTest class.
  * </p>
- *
+ * 
  * @author lars
  * @version $Id: $
  * @since 0.3
@@ -25,7 +25,7 @@ public class SourcePathFixerTest
    * <p>
    * testHandle.
    * </p>
-   *
+   * 
    * @throws java.io.IOException
    *           if any.
    */

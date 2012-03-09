@@ -1,7 +1,6 @@
 package de.lgohlke.syntaxhighlighter;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.NullArgumentException;
+import org.apache.commons.lang.StringUtils;
 import org.picocontainer.MutablePicoContainer;
 import org.sonar.squid.Squid;
 import org.sonar.squid.api.SourceCode;
@@ -81,7 +81,7 @@ public class CodeDocumentGenerator
   private AnalysisTestFilter           analysisTestFilter;
 
   private HashMap<String, Set<String>> failedTests;
-  Map<String, SourceCode>              test2code           = new HashMap<String, SourceCode>();
+  Map<String, SourceCode> test2code = new HashMap<String, SourceCode>();
 
   public CodeDocumentGenerator(final MutablePicoContainer pico, final Squid squid)
   {
@@ -143,17 +143,11 @@ public class CodeDocumentGenerator
   {
     final File file = new File(targetDirectory.getAbsolutePath() + "/orderedList.html");
 
-    final TestOverviewTable table = new TestOverviewTable(2);
-
-    table.headCell("name").headCell("score");
+    final TestOverviewTable table = new TestOverviewTable(1);
 
     for (FailedTest test : orderedFailedTests)
     {
       table.cell(test.getClazz() + "#" + test.getMethod());
-
-      SourceCode code = test2code.get(test.getClazz() + "#" + test.getMethod());
-      //      int score =0;
-      table.cell( new StandardTestOrder().weightMetric(code) +"");
     }
     writerQueue.submit(new Runnable()
     {
@@ -176,7 +170,9 @@ public class CodeDocumentGenerator
 
   private List<FailedTest> getOrderedFailedTests() throws ConfigurationException, IOException
   {
-    return TestAnalysisOrderer.useMap(test2code).orderWith(new StandardTestOrder());
+    List<FailedTest> orderedList =  TestAnalysisOrderer.useMap(test2code).orderWith(new StandardTestOrder());
+
+    return orderedList;
   }
 
   private void fillLocalFailedTestsList() throws IOException, ConfigurationException
@@ -206,27 +202,25 @@ public class CodeDocumentGenerator
     // document.text("<div><p>&nbsp;</p></div>");
     // }
 
-    HtmlTable table = new TestOverviewTable(2 + MetricsWorthToAnalyze.LIST.size());
+    HtmlTable table = new TestOverviewTable(1 + MetricsWorthToAnalyze.LIST.size());
     {
       table.setStyle("width:40% !important;");
       // table.setColumnStyle("<col style=\"width:70%\"/><col span=\"15\" style=\"width:15px\"/>");
     }
     // header
-    table.headCell("test");
+    table.cell("test");
     b.append("test");
     for (MetricDef m : MetricsWorthToAnalyze.LIST)
     {
       // String[] splitted = m.getName().split("");
       // String joined = StringUtils.join(splitted, "</br>");
 
-      table.headCell("<div><span style=\"width:40px;\">" + m.getName() + "</span></div>");
-
+      table.cell("<div><span>" + m.getName() + "</span></div>");
       b.append("|" + m.getName());
     }
-
-    table.headCell("<div><span style=\"width:40px;\">testOrderScore</span></div>");
-
     b.append('\n');
+
+
 
     for (Entry<String, SourceCode> entry : test2code.entrySet())
     {
@@ -237,16 +231,13 @@ public class CodeDocumentGenerator
       else
       {
         // alway <class>#<method>
-        String[] parts= entry.getKey().split("#");
-        String clazz = parts[0].replaceFirst("#", ".");
-        String test= parts[1];
+        String test = entry.getKey().split("#")[1];
 
-        String link = clazz + "#" + test;
+        String link = test;
         link = link.replaceFirst("\\(.*", "");
         link = link.replaceAll(".*\\ ", "");
-        //        String linkText = StringUtils.reverse(StringUtils.reverse(link).replaceFirst("\\.", "#"));
-        String linkText = link;
-        table.cell("<a href=\"testmethods/" + linkText.replaceAll("#", "%23") + "().html\">" + linkText + "</a>");
+        String linkText = StringUtils.reverse(StringUtils.reverse(link).replaceFirst("\\.", "#"));
+        table.cell("<a href=\"testmethods/" + linkText.replace("#", "%23") + "().html\">" + linkText + "</a>");
         b.append(test);
         for (MetricDef metric : MetricsWorthToAnalyze.LIST)
         {
@@ -254,8 +245,6 @@ public class CodeDocumentGenerator
           table.cell(metricFormatted);
           b.append("|" + metricFormatted);
         }
-
-        table.cell(new StandardTestOrder().weightMetric(entry.getValue()) +"");
       }
       b.append('\n');
     }
@@ -283,7 +272,6 @@ public class CodeDocumentGenerator
       }
     });
   }
-
   /**
    * 
    */
@@ -789,19 +777,12 @@ public class CodeDocumentGenerator
     File cssSourceDir = new File(resourcePath.getAbsolutePath() + "/styles");
     File cssDir = new File(targetDirectory.getAbsolutePath() + "/styles");
 
-    try
-    {
-      FileUtils.copyDirectory(scriptSourceDir, scriptDir);
-      FileUtils.copyDirectory(cssSourceDir, cssDir);
+    FileUtils.copyDirectory(scriptSourceDir, scriptDir);
+    FileUtils.copyDirectory(cssSourceDir, cssDir);
 
-      for (File myFile : FileUtils.listFiles(new File("src/main/resources"), new String[] { "css", "js" }, false))
-      {
-        FileUtils.copyFile(myFile, new File(targetDirectory.getAbsolutePath() + "/" + myFile.getName()));
-      }
-    }
-    catch (FileNotFoundException e)
+    for (File myFile : FileUtils.listFiles(new File("src/main/resources"), new String[] { "css", "js" }, false))
     {
-      log.warn("could not copy scripts : " + e.getMessage());
+      FileUtils.copyFile(myFile, new File(targetDirectory.getAbsolutePath() + "/" + myFile.getName()));
     }
   }
 }

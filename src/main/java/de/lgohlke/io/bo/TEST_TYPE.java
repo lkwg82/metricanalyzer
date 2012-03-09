@@ -26,7 +26,7 @@ public enum TEST_TYPE
     @Override
     public List<String> getLifeCycleAnnotations()
     {
-      return Arrays.asList(new String[] { "org.junit.Before", "org.junit.After","org.junit.BeforeClass","org.junit.AfterClass" });
+      return Arrays.asList(new String[] { "org.junit.Before", "org.junit.After" });
     }
 
   },

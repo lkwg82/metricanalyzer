@@ -15,6 +15,7 @@ import org.junit.Test;
 
 import de.lgohlke.MetricAnalyzer;
 import de.lgohlke.io.bo.TEST_TYPE;
+import de.lgohlke.runner.CLIRunner;
 
 public class CLIRunnerTest
 {

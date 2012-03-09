@@ -96,7 +96,7 @@ public class VariableTypeDistanceVisitor extends JavaAstVisitor
       }
       else
       {
-        //        log.debug("handling class vars " + res.getKey());
+        // log.debug("handling class vars " + currentClass);
         for (DetailAST classVarDefAst : classVariablesDef)
         {
           // log.debug("call recursive for " + classVarDefAst);
@@ -117,19 +117,16 @@ public class VariableTypeDistanceVisitor extends JavaAstVisitor
     MetricDef AST_VARIABLE_DEFINITION_TYPE_DISTANCE;
     MetricDef AST_NUMBER_OF_VARIABLE_DEFINITION;
     MetricDef AST_NUMBER_OF_VARIABLE_DEFINITION_NON_ZERO_TYPE_DISTANCE;
-    MetricDef AST_VARIABLE_DEFINITION_TYPE_DISTANCE_LIST;
 
     if (isclassVarDef)
     {
       AST_VARIABLE_DEFINITION_TYPE_DISTANCE = ASTMetrics.AST_CLASS_VARIABLE_DEFINITION_TYPE_DISTANCE;
-      AST_VARIABLE_DEFINITION_TYPE_DISTANCE_LIST = ASTMetrics.AST_CLASS_VARIABLE_DEFINITION_TYPE_DISTANCE_LIST;
       AST_NUMBER_OF_VARIABLE_DEFINITION = ASTMetrics.AST_CLASS_NUMBER_OF_VARIABLE_DEFINITION;
       AST_NUMBER_OF_VARIABLE_DEFINITION_NON_ZERO_TYPE_DISTANCE = ASTMetrics.AST_CLASS_NUMBER_OF_VARIABLE_DEFINITION_NON_ZERO_TYPE_DISTANCE;
     }
     else
     {
       AST_VARIABLE_DEFINITION_TYPE_DISTANCE = ASTMetrics.AST_VARIABLE_DEFINITION_TYPE_DISTANCE;
-      AST_VARIABLE_DEFINITION_TYPE_DISTANCE_LIST = ASTMetrics.AST_VARIABLE_DEFINITION_TYPE_DISTANCE_LIST;
       AST_NUMBER_OF_VARIABLE_DEFINITION = ASTMetrics.AST_NUMBER_OF_VARIABLE_DEFINITION;
       AST_NUMBER_OF_VARIABLE_DEFINITION_NON_ZERO_TYPE_DISTANCE = ASTMetrics.AST_NUMBER_OF_VARIABLE_DEFINITION_NON_ZERO_TYPE_DISTANCE;
 
@@ -173,25 +170,10 @@ public class VariableTypeDistanceVisitor extends JavaAstVisitor
         registry.addMetricPerLine(visitorKey, AST_VARIABLE_DEFINITION_TYPE_DISTANCE, metricDistance);
       }
 
-      // useless comparision
-      // if (ast.getType() == TokenTypes.VARIABLE_DEF)
+      if (ast.getType() == TokenTypes.VARIABLE_DEF)
       {
         res.add(AST_NUMBER_OF_VARIABLE_DEFINITION, 1);
         registry.addMetricPerLine(visitorKey, AST_NUMBER_OF_VARIABLE_DEFINITION, 1D);
-
-        /**
-         * retrieve the old list and add one and set again
-         */
-        @SuppressWarnings("unchecked")
-        List<Double> typeDistanceList = (List<Double>) res.getData(AST_VARIABLE_DEFINITION_TYPE_DISTANCE_LIST);
-        if (typeDistanceList == null)
-        {
-          typeDistanceList = new ArrayList<Double>();
-        }
-
-        typeDistanceList.add(metricDistance);
-
-        res.addData(AST_VARIABLE_DEFINITION_TYPE_DISTANCE_LIST, typeDistanceList);
 
         if (metricDistance > 0)
         {

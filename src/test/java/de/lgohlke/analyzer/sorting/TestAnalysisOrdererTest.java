@@ -25,7 +25,7 @@ public class TestAnalysisOrdererTest
     Map<String, SourceCode> test2codeMap = new HashMap<String, SourceCode>();
     SourceCode codeA = mock(SourceCode.class);
     SourceCode codeB = mock(SourceCode.class);
-    when(codeA.getInt((MetricDef) Metric.CA)).thenReturn(3);
+    when(codeA.getInt((MetricDef) Metric.CA)).thenReturn(1);
     when(codeB.getInt((MetricDef) Metric.CA)).thenReturn(2);
 
     test2codeMap.put("a#fail", codeA);
@@ -51,8 +51,8 @@ public class TestAnalysisOrdererTest
       }
     });
 
-    Assert.assertEquals(failedTestA, resultList.get(1));
-    Assert.assertEquals(failedTestB, resultList.get(0));
+    Assert.assertEquals(failedTestA, resultList.get(0));
+    Assert.assertEquals(failedTestB, resultList.get(1));
 
   }
 }

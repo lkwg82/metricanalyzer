@@ -7,11 +7,6 @@ import org.sonar.squid.measures.MetricDef;
  * <p>
  * ASTMetrics class.
  * </p>
- * the metrics differs between their prefixes
- * <ul>
- * <li><b>AST_</b>... - are be set in the JavaAstVisitors</li>
- * <li><b>AGGREGATE_</b>... - are computed in {@see RelatedCodeMetricAggregator}</li>
- * </ul>
  * 
  * @author lars
  * @version $Id: $
@@ -103,7 +98,7 @@ public enum ASTMetrics implements MetricDef
     }
 
   },
-  AGGREGATE_SUM_VARIABLE_DEFINITION_TYPE_DISTANCE
+  AGGREGATE_VARIABLE_DEFINITION_TYPE_DISTANCE
   {
 
     @Override
@@ -129,142 +124,84 @@ public enum ASTMetrics implements MetricDef
     {
       return "density of type distance per loc";
     }
-  },
-  AST_CLASS_VARIABLE_DEFINITION_TYPE_DISTANCE_LIST
+  };
+
+  /** Constant <code>aggregateIfThereIsAlreadyAValue=true</code> */
+  private final static boolean           aggregateIfThereIsAlreadyAValue = true;
+  // private final static AggregationFormula aggregationFormula = new SumAggregationFormula();
+  private static CalculatedMetricFormula formula                         = null;
+
+  /**
+   * <p>
+   * aggregateIfThereIsAlreadyAValue.
+   * </p>
+   * 
+   * @return a boolean.
+   */
+  @Override
+  public boolean aggregateIfThereIsAlreadyAValue()
   {
-    @Override
-    public String getShortName()
-    {
-      return "list of type distance values";
-    }
-  },
-  AST_VARIABLE_DEFINITION_TYPE_DISTANCE_LIST
+    return aggregateIfThereIsAlreadyAValue;
+  }
+
+  /**
+   * <p>
+   * getCalculatedMetricFormula.
+   * </p>
+   * 
+   * @return a {@link org.sonar.squid.measures.CalculatedMetricFormula} object.
+   */
+  @Override
+  public CalculatedMetricFormula getCalculatedMetricFormula()
   {
-    @Override
-    public String getShortName()
-    {
-      return "list of type distance values";
-    }
-  },
-  AGGREGATE_MEAN_OF_VARIABLE_DEFINITION_TYPE_DISTANCE
+    return formula;
+  }
+
+  /**
+   * <p>
+   * getName.
+   * </p>
+   * 
+   * @return a {@link java.lang.String} object.
+   */
+  @Override
+  public String getName()
   {
+    return name();
+  }
 
-    @Override
-    public String getShortName()
-    {
-      return "median of var defs";
-    }
-  },
-  AGGREGATE_MAX_VARIABLE_DEFINITION_TYPE_DISTANCE
+  /**
+   * <p>
+   * getShortName.
+   * </p>
+   * 
+   * @return a {@link java.lang.String} object.
+   */
+  public abstract String getShortName();
+
+  /**
+   * <p>
+   * isCalculatedMetric.
+   * </p>
+   * 
+   * @return a boolean.
+   */
+  @Override
+  public boolean isCalculatedMetric()
   {
+    return formula != null;
+  }
 
-    @Override
-    public String getShortName()
-    {
-      return "the max var type distance";
-    }
-  },
-  AGGREGATE_MAX_CLASS_VARIABLE_DEFINITION_TYPE_DISTANCE
+  /**
+   * <p>
+   * isThereAggregationFormula.
+   * </p>
+   * 
+   * @return a boolean.
+   */
+  @Override
+  public boolean isThereAggregationFormula()
   {
-
-    @Override
-    public String getShortName()
-    {
-      return "the max var type distance";
-    }
-  },
-  AGGREGATE_MAX_DEFINITION_TYPE_DISTANCE
-  {
-
-    @Override
-    public String getShortName()
-    {
-      return "max of class and var def type distance";
-    }
-  }, AGGREGATE_MEDIAN_DEFINITION_TYPE_DISTANCE{
-
-    @Override
-    public String getShortName()
-    {
-      return "the median from the class and var def type distances";
-    }};
-
-    /** Constant <code>aggregateIfThereIsAlreadyAValue=true</code> */
-    private final static boolean           aggregateIfThereIsAlreadyAValue = true;
-    // private final static AggregationFormula aggregationFormula = new SumAggregationFormula();
-    private static CalculatedMetricFormula formula                         = null;
-
-    /**
-     * <p>
-     * aggregateIfThereIsAlreadyAValue.
-     * </p>
-     * 
-     * @return a boolean.
-     */
-    @Override
-    public boolean aggregateIfThereIsAlreadyAValue()
-    {
-      return aggregateIfThereIsAlreadyAValue;
-    }
-
-    /**
-     * <p>
-     * getCalculatedMetricFormula.
-     * </p>
-     * 
-     * @return a {@link org.sonar.squid.measures.CalculatedMetricFormula} object.
-     */
-    @Override
-    public CalculatedMetricFormula getCalculatedMetricFormula()
-    {
-      return formula;
-    }
-
-    /**
-     * <p>
-     * getName.
-     * </p>
-     * 
-     * @return a {@link java.lang.String} object.
-     */
-    @Override
-    public String getName()
-    {
-      return name();
-    }
-
-    /**
-     * <p>
-     * getShortName.
-     * </p>
-     * 
-     * @return a {@link java.lang.String} object.
-     */
-    public abstract String getShortName();
-
-    /**
-     * <p>
-     * isCalculatedMetric.
-     * </p>
-     * 
-     * @return a boolean.
-     */
-    @Override
-    public boolean isCalculatedMetric()
-    {
-      return formula != null;
-    }
-
-    /**
-     * <p>
-     * isThereAggregationFormula.
-     * </p>
-     * 
-     * @return a boolean.
-     */
-    @Override
-    public boolean isThereAggregationFormula()
-    {
-      return false; // !(aggregationFormula instanceof NoAggregationFormula);
-    }
+    return false; // !(aggregationFormula instanceof NoAggregationFormula);
+  }
 }

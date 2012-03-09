@@ -30,8 +30,7 @@ public class MetricAnalyzerTest
     Files.deleteRecursively(outputDir);
   }
 
-  @Test
-  //(timeout = 60000)
+  @Test(timeout = 60000)
   public void testAll() throws Exception
   {
     File directoryToAnalyse = new File(System.getProperty("user.dir"));
@@ -67,15 +66,9 @@ public class MetricAnalyzerTest
 
     Assert.assertTrue(outputDir + " is missing ", outputDir.exists());
     File classDir = new File(outputDir.getAbsolutePath() + "/classes");
-    File testmethodsSourceDir = new File(outputDir.getAbsolutePath() + "/testmethodsSource");
-    File testmethodsDir = new File(outputDir.getAbsolutePath() + "/testmethods");
-
     System.out.println(classDir);
-    System.out.println(testmethodsSourceDir);
-
     Assert.assertEquals(1, classDir.list().length);
-    Assert.assertTrue(testmethodsSourceDir.list().length > 1);
-    Assert.assertEquals(filter.getFailedTests().size(), testmethodsSourceDir.list().length);
-    Assert.assertEquals(filter.getFailedTests().size(), testmethodsDir.list().length);
+    Assert.assertEquals(filter.getFailedTests().size(), new File(outputDir.getAbsolutePath() + "/testmethodsSource").list().length);
+    Assert.assertEquals(filter.getFailedTests().size(), new File(outputDir.getAbsolutePath() + "/testmethods").list().length);
   }
 }

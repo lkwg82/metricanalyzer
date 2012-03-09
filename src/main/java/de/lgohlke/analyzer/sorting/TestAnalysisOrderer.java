@@ -57,7 +57,6 @@ public class TestAnalysisOrderer
           int weightA = weights.get(a);
           int weightB = weights.get(b);
 
-          // lowest first
           return weightA == weightB ? 0 : weightA < weightB ? -1 : 1;
         }
           });

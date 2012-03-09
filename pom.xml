@@ -5,17 +5,16 @@
       <groupId>de.lgohlke.poms</groupId>
       <artifactId>parent</artifactId>
       <version>2</version>
-      <relativePath>../pom.xml</relativePath>
    </parent>
 
    <groupId>de.lgohlke.master</groupId>
    <artifactId>MetricsAnalyzer</artifactId>
-   <version>0.6-SNAPSHOT</version>
+   <version>0.4</version>
    <name>MetricsAnalyzer</name>
 
    <scm>
       <!-- <connection>scm:svn:https://master.lgohlke.de/_svn/projects/MetricAnalyzer/trunk</connection> -->
-      <developerConnection>scm:svn:https://master.lgohlke.de/_svn/projects/MetricsAnalyzer/trunk</developerConnection>
+      <developerConnection>scm:svn:https://master.lgohlke.de/_svn/projects/MetricsAnalyzer/tags/MetricsAnalyzer-0.4</developerConnection>
    </scm>
 
    <properties>
@@ -27,22 +26,6 @@
    </properties>
 
    <repositories>
-      <repository>
-         <id>de.lgohlke.maven3</id>
-         <url>http://repos3.lgohlke.de</url>
-      </repository>
-      <repository>
-         <id>de.lgohlke.maven3.snaps</id>
-         <url>http://snapshots3.lgohlke.de</url>
-      </repository>
-      <repository>
-         <id>de.lgohlke.maven2.snaps</id>
-         <url>http://snapshots.lgohlke.de/maven2</url>
-      </repository>
-      <repository>
-         <id>de.lgohlke.maven2</id>
-         <url>http://repos.lgohlke.de/maven2</url>
-      </repository>
       <repository>
          <id>gson</id>
          <url>http://google-gson.googlecode.com/svn/mavenrepo</url>
@@ -72,7 +55,7 @@
          </exclusions>
       </dependency>
       <!-- unit tests -->
-      <!-- <dependency> <groupId>org.codehaus.sonar</groupId> <artifactId>sonar-testing-harness</artifactId>
+      <!-- <dependency> <groupId>org.codehaus.sonar</groupId> <artifactId>sonar-testing-harness</artifactId> 
          <version>${sonar.version}</version> </dependency> -->
       <dependency>
          <groupId>org.codehaus.sonar</groupId>
@@ -112,7 +95,7 @@
          <version>1.12</version>
          <!-- <scope>test</scope> -->
       </dependency>
-      <!-- <dependency> <groupId>org.testng</groupId> <artifactId>testng</artifactId>
+      <!-- <dependency> <groupId>org.testng</groupId> <artifactId>testng</artifactId> 
          <version>5.14.10</version> <scope>test</scope> </dependency> -->
       <dependency>
          <groupId>junit</groupId>
@@ -131,9 +114,9 @@
          <groupId>commons-logging</groupId>
          <artifactId>commons-logging</artifactId>
       </dependency>
-      <!-- <dependency> <groupId>commons-codec</groupId> <artifactId>commons-codec</artifactId>
+      <!-- <dependency> <groupId>commons-codec</groupId> <artifactId>commons-codec</artifactId> 
          </dependency> -->
-      <!-- <dependency> <groupId>commons-lang</groupId> <artifactId>commons-lang</artifactId>
+      <!-- <dependency> <groupId>commons-lang</groupId> <artifactId>commons-lang</artifactId> 
          <version>2.6</version> </dependency> -->
       <!-- Gson: Java to Json conversion -->
       <dependency>
@@ -159,7 +142,7 @@
       <dependency>
          <groupId>de.lgohlke</groupId>
          <artifactId>commons</artifactId>
-         <version>0.3</version>
+         <version>0.2-SNAPSHOT</version>
       </dependency>
       <dependency>
          <groupId>net.sf.ehcache</groupId>
@@ -271,14 +254,14 @@
                <tagBase>https://master.lgohlke.de/_svn/projects/MetricsAnalyzer/tags</tagBase>
             </configuration>
          </plugin>
-         <!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-assembly-plugin</artifactId>
-            <executions> <execution> <goals> <goal>attached</goal> </goals> <phase>package</phase>
-            <configuration> <descriptorRefs> <descriptorRef>jar-with-dependencies</descriptorRef>
-            </descriptorRefs> <archive> <manifest> <mainClass>${java.main.class}</mainClass>
+         <!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-assembly-plugin</artifactId> 
+            <executions> <execution> <goals> <goal>attached</goal> </goals> <phase>package</phase> 
+            <configuration> <descriptorRefs> <descriptorRef>jar-with-dependencies</descriptorRef> 
+            </descriptorRefs> <archive> <manifest> <mainClass>${java.main.class}</mainClass> 
             </manifest> </archive> </configuration> </execution> </executions> </plugin> -->
-         <!-- <plugin> <groupId>org.codehaus.mojo</groupId> <artifactId>build-helper-maven-plugin</artifactId>
-            <version>1.7</version> <executions> <execution> <id>add-source</id> <phase>generate-sources</phase>
-            <goals> <goal>add-source</goal> </goals> <configuration> <sources> <source>src/main/aspect</source>
+         <!-- <plugin> <groupId>org.codehaus.mojo</groupId> <artifactId>build-helper-maven-plugin</artifactId> 
+            <version>1.7</version> <executions> <execution> <id>add-source</id> <phase>generate-sources</phase> 
+            <goals> <goal>add-source</goal> </goals> <configuration> <sources> <source>src/main/aspect</source> 
             </sources> </configuration> </execution> </executions> </plugin> -->
       </plugins>
    </build>

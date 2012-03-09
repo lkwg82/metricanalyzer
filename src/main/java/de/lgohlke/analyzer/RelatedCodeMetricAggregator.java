@@ -21,9 +21,6 @@ import de.lgohlke.CommonStore;
 import de.lgohlke.AST.ASTMetrics;
 import de.lgohlke.AST.Location;
 import de.lgohlke.AST.Registry;
-import de.lgohlke.analyzer.aggregationRules.MaxAggregationRule;
-import de.lgohlke.analyzer.aggregationRules.MeanAggregationRule;
-import de.lgohlke.analyzer.aggregationRules.MedianAggregationRule;
 import de.lgohlke.analyzer.aggregationRules.MetricAggregationRuleAbstract;
 import de.lgohlke.analyzer.aggregationRules.SetRelatedMethodsCountAggregationRule;
 import de.lgohlke.analyzer.aggregationRules.SumDifferentMetricsAggregationRule;
@@ -61,23 +58,14 @@ public class RelatedCodeMetricAggregator
     new SumRelatedMethodsAggregationRule(ASTMetrics.AST_VARIABLE_DEFINITION_TYPE_DISTANCE),
     new SumRelatedMethodsOfDifferentClassesAggregationRule(ASTMetrics.AST_CLASS_VARIABLE_DEFINITION_TYPE_DISTANCE),
     new SetRelatedMethodsCountAggregationRule(ASTMetrics.AST_RELATED_METHODS) };
-  /**
-   * order matters (!)
-   */
+
   private final static MetricAggregationRuleAbstract[] aggregationRules        = new MetricAggregationRuleAbstract[] { //
     new SumDifferentMetricsAggregationRule(ASTMetrics.AGGREGATE_SUM_VARIABLE_DEFINITION, ASTMetrics.AST_CLASS_NUMBER_OF_VARIABLE_DEFINITION,
         ASTMetrics.AST_NUMBER_OF_VARIABLE_DEFINITION),//
-        new SumDifferentMetricsAggregationRule(ASTMetrics.AGGREGATE_SUM_VARIABLE_DEFINITION_TYPE_DISTANCE, ASTMetrics.AST_CLASS_VARIABLE_DEFINITION_TYPE_DISTANCE,
-            ASTMetrics.AST_VARIABLE_DEFINITION_TYPE_DISTANCE),
+        new SumDifferentMetricsAggregationRule(ASTMetrics.AGGREGATE_VARIABLE_DEFINITION_TYPE_DISTANCE, ASTMetrics.AST_CLASS_VARIABLE_DEFINITION_TYPE_DISTANCE,
+            ASTMetrics.AST_VARIABLE_DEFINITION_TYPE_DISTANCE),//
             new SumDifferentMetricsAggregationRule(ASTMetrics.AGGREGATE_NUMBER_OF_VARIABLE_DEFINITION_NON_ZERO_TYPE_DISTANCE,
-                ASTMetrics.AST_CLASS_NUMBER_OF_VARIABLE_DEFINITION_NON_ZERO_TYPE_DISTANCE, ASTMetrics.AST_NUMBER_OF_VARIABLE_DEFINITION_NON_ZERO_TYPE_DISTANCE),
-                new MeanAggregationRule(ASTMetrics.AGGREGATE_MEAN_OF_VARIABLE_DEFINITION_TYPE_DISTANCE, ASTMetrics.AST_VARIABLE_DEFINITION_TYPE_DISTANCE_LIST),
-                new MaxAggregationRule(ASTMetrics.AGGREGATE_MAX_VARIABLE_DEFINITION_TYPE_DISTANCE, ASTMetrics.AST_VARIABLE_DEFINITION_TYPE_DISTANCE_LIST),
-                new MaxAggregationRule(ASTMetrics.AGGREGATE_MAX_CLASS_VARIABLE_DEFINITION_TYPE_DISTANCE, ASTMetrics.AST_CLASS_VARIABLE_DEFINITION_TYPE_DISTANCE_LIST),
-                new MaxAggregationRule(ASTMetrics.AGGREGATE_MAX_DEFINITION_TYPE_DISTANCE, ASTMetrics.AST_CLASS_VARIABLE_DEFINITION_TYPE_DISTANCE_LIST,
-                    ASTMetrics.AST_VARIABLE_DEFINITION_TYPE_DISTANCE_LIST),
-                    new MedianAggregationRule(ASTMetrics.AGGREGATE_MEDIAN_DEFINITION_TYPE_DISTANCE, ASTMetrics.AST_CLASS_VARIABLE_DEFINITION_TYPE_DISTANCE_LIST,
-                        ASTMetrics.AST_VARIABLE_DEFINITION_TYPE_DISTANCE_LIST)};
+                ASTMetrics.AST_CLASS_NUMBER_OF_VARIABLE_DEFINITION_NON_ZERO_TYPE_DISTANCE, ASTMetrics.AST_NUMBER_OF_VARIABLE_DEFINITION_NON_ZERO_TYPE_DISTANCE) };
 
   private final SourceCodeSearchEngine                 searchEngine;
   private final MutablePicoContainer                   pico;
@@ -251,15 +239,15 @@ public class RelatedCodeMetricAggregator
             {
               SourceCode testMethod = accessor.retrieveTestMethod();
               // TODO warum double??
-              double aggregateTypeDistance = testMethod.getDouble(ASTMetrics.AGGREGATE_SUM_VARIABLE_DEFINITION_TYPE_DISTANCE);
+              double aggregateTypeDistance = testMethod.getDouble(ASTMetrics.AGGREGATE_VARIABLE_DEFINITION_TYPE_DISTANCE);
               double ast_class_vard_defs = testMethod.getDouble(ASTMetrics.AST_CLASS_NUMBER_OF_VARIABLE_DEFINITION);
-              double loc = testMethod.getDouble((MetricDef) Metric.LINES_OF_CODE);
+              double loc = testMethod.getDouble((MetricDef)Metric.LINES_OF_CODE);
               double asserts = testMethod.getDouble(ASTMetrics.AST_NUMBER_OF_ASSERT_STATEMENTS);
 
               Double result = aggregateTypeDistance / ((ast_class_vard_defs + loc) - asserts);
 
               // registry.addDescription(key, metric, describe)
-              testMethod.setMeasure(getMetric(), result);
+              testMethod.setMeasure(ASTMetrics.AGGREGATE_VARIABLE_DEFINITION_TYPE_DISTANCE_PER_LOC, result);
             }
           }.doAggregation(accessor);
         }

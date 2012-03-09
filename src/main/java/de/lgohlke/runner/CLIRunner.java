@@ -77,7 +77,6 @@ public class CLIRunner
     try
     {
       log.debug("arguments : " + StringUtils.join(_args, " "));
-      System.out.println(_args.length);
       OptionSet options = parser.parse(_args);
 
       if (options.has(helpOptSpec))

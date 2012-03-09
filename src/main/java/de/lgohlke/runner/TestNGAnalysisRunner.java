@@ -67,11 +67,7 @@ public class TestNGAnalysisRunner implements ITestListener, IFailedTestFilter
     {
       failedTests.add(FailedTest.createRawFailedTest(m.getRealClass().getCanonicalName(), m.getMethodName()));
     }
-
-    if (failedTests.size() > 1)
-    {
-      runPostTestAnalysis();
-    }
+    runPostTestAnalysis();
   }
 
   /**

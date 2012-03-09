@@ -6,34 +6,28 @@ import java.util.List;
 import java.util.Queue;
 
 /**
- * <p>
- * HtmlTable class.
- * </p>
- * 
+ * <p>HtmlTable class.</p>
+ *
  * @author lars
  * @version $Id: $
  */
 public class HtmlTable extends StyleableElementAbstract
 {
 
-  private static final String TABLE_HEAD   = "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\" " + STYLE + " class=\"tablesorter\" id=\"myTable\">";
+  private static final String TABLE_HEAD   = "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\" " + STYLE + ">";
   private static final String TABLE_FOOTER = "</table>";
   private static final String ROW_START    = "<tr id=\"row_%d\">";
   private static final String ROW_END      = "</tr>";
 
   private final int           columns;
   private final List<String>  cells;
-  private final List<String>  headCells;
   private final List<String>  cellStyles;
   private String              columnStyle;
 
   /**
-   * <p>
-   * Constructor for HtmlTable.
-   * </p>
-   * 
-   * @param columns
-   *          a int.
+   * <p>Constructor for HtmlTable.</p>
+   *
+   * @param columns a int.
    */
   public HtmlTable(final int columns)
   {
@@ -41,32 +35,23 @@ public class HtmlTable extends StyleableElementAbstract
   }
 
   /**
-   * <p>
-   * Constructor for HtmlTable.
-   * </p>
-   * 
-   * @param columns
-   *          a int.
-   * @param rows
-   *          a int.
+   * <p>Constructor for HtmlTable.</p>
+   *
+   * @param columns a int.
+   * @param rows a int.
    */
   public HtmlTable(final int columns, final int rows)
   {
     this.columns = columns;
     cells = new ArrayList<String>(columns * rows);
-    headCells = new ArrayList<String>(columns);
     cellStyles = new ArrayList<String>(cells.size());
   }
 
   /**
-   * <p>
-   * cell.
-   * </p>
-   * 
-   * @param string
-   *          a {@link java.lang.String} object.
-   * @param style
-   *          a {@link java.lang.String} object.
+   * <p>cell.</p>
+   *
+   * @param string a {@link java.lang.String} object.
+   * @param style a {@link java.lang.String} object.
    * @return a {@link de.lgohlke.syntaxhighlighter.HtmlTable} object.
    */
   public HtmlTable cell(final String string, final String style)
@@ -77,12 +62,9 @@ public class HtmlTable extends StyleableElementAbstract
   }
 
   /**
-   * <p>
-   * cell.
-   * </p>
-   * 
-   * @param string
-   *          a {@link java.lang.String} object.
+   * <p>cell.</p>
+   *
+   * @param string a {@link java.lang.String} object.
    * @return a {@link de.lgohlke.syntaxhighlighter.HtmlTable} object.
    */
   public HtmlTable cell(final String string)
@@ -97,22 +79,11 @@ public class HtmlTable extends StyleableElementAbstract
     StringBuffer b = new StringBuffer();
 
     Queue<String> _cells = new LinkedList<String>(cells);
-    Queue<String> _headCells = new LinkedList<String>(headCells);
     Queue<String> _styles = new LinkedList<String>(cellStyles);
 
     b.append(styleElement(TABLE_HEAD));
     b.append(getColumnStyle() == null ? "" : getColumnStyle());
     b.append("\n");
-
-    b.append("<thead>");
-    for (int i = 0; i < headCells.size(); i++)
-    {
-
-      b.append("<th>");
-      b.append(_headCells.poll());
-      b.append("</th>");
-    }
-    b.append("</thead>");
 
     b.append("<tbody>");
     b.append("\n");
@@ -129,7 +100,7 @@ public class HtmlTable extends StyleableElementAbstract
 
       handleCell(b, _cells.poll(), _styles.poll(), col, row);
 
-      if ((i % columns) == (columns - 1))
+      if (i % columns == columns - 1)
       {
         handleRowEnd(b, row);
       }
@@ -142,14 +113,10 @@ public class HtmlTable extends StyleableElementAbstract
   }
 
   /**
-   * <p>
-   * handleRowEnd.
-   * </p>
-   * 
-   * @param b
-   *          a {@link java.lang.StringBuffer} object.
-   * @param row
-   *          a int.
+   * <p>handleRowEnd.</p>
+   *
+   * @param b a {@link java.lang.StringBuffer} object.
+   * @param row a int.
    */
   protected void handleRowEnd(final StringBuffer b, final int row)
   {
@@ -159,20 +126,13 @@ public class HtmlTable extends StyleableElementAbstract
   }
 
   /**
-   * <p>
-   * handleCell.
-   * </p>
-   * 
-   * @param b
-   *          a {@link java.lang.StringBuffer} object.
-   * @param content
-   *          a {@link java.lang.String} object.
-   * @param style
-   *          a {@link java.lang.String} object.
-   * @param col
-   *          a int.
-   * @param row
-   *          a int.
+   * <p>handleCell.</p>
+   *
+   * @param b a {@link java.lang.StringBuffer} object.
+   * @param content a {@link java.lang.String} object.
+   * @param style a {@link java.lang.String} object.
+   * @param col a int.
+   * @param row a int.
    */
   protected void handleCell(final StringBuffer b, final String content, final String style, final int col, final int row)
   {
@@ -191,14 +151,10 @@ public class HtmlTable extends StyleableElementAbstract
   }
 
   /**
-   * <p>
-   * handleRowStart.
-   * </p>
-   * 
-   * @param b
-   *          a {@link java.lang.StringBuffer} object.
-   * @param row
-   *          a int.
+   * <p>handleRowStart.</p>
+   *
+   * @param b a {@link java.lang.StringBuffer} object.
+   * @param row a int.
    */
   protected void handleRowStart(final StringBuffer b, final int row)
   {
@@ -208,10 +164,8 @@ public class HtmlTable extends StyleableElementAbstract
   }
 
   /**
-   * <p>
-   * Getter for the field <code>columnStyle</code>.
-   * </p>
-   * 
+   * <p>Getter for the field <code>columnStyle</code>.</p>
+   *
    * @return a {@link java.lang.String} object.
    */
   public String getColumnStyle()
@@ -220,21 +174,12 @@ public class HtmlTable extends StyleableElementAbstract
   }
 
   /**
-   * <p>
-   * Setter for the field <code>columnStyle</code>.
-   * </p>
-   * 
-   * @param columnStyle
-   *          a {@link java.lang.String} object.
+   * <p>Setter for the field <code>columnStyle</code>.</p>
+   *
+   * @param columnStyle a {@link java.lang.String} object.
    */
   public void setColumnStyle(final String columnStyle)
   {
     this.columnStyle = columnStyle;
-  }
-
-  public HtmlTable headCell(final String string)
-  {
-    headCells.add(string);
-    return this;
   }
 }

@@ -131,8 +131,6 @@ public final class MetricAnalyzer
       }
     }
     log.info("finished");
-
-    log.info("\n\n\n see " + directoryToWriteTo.getAbsolutePath() + " for additional help for analysing the problems \n\n\n");
   }
 
   // private static void printTestMethodStats(final SourceCode code)
