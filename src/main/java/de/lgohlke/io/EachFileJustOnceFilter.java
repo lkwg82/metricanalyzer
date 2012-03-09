@@ -14,11 +14,6 @@ public class EachFileJustOnceFilter implements IQDoxScanHandler
   private final IQDoxScanHandler handler;
   private final Set<String>      alreadyHandledFiles;
 
-  /**
-   * @param handler
-   * @param pico
-   * @param cacheKey
-   */
   public EachFileJustOnceFilter(final IQDoxScanHandler handler, final MutablePicoContainer pico, final String cacheKey)
   {
     this.handler = handler;

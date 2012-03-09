@@ -94,7 +94,6 @@ public class JavaSourceScanner
   private void scanSequential()
   {
     CommonStore store = pico.getComponent(CommonStore.class);
-
     // TODO remove registry, test again with QDOX 2 and try an annotation with \\ in see see
     // http://jira.codehaus.org/browse/QDOX-230
     QDoxScanner scanner = new QDoxScanner(registry);

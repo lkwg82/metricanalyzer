@@ -10,6 +10,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.picocontainer.MutablePicoContainer;
+import org.sonar.squid.api.SourceClass;
+import org.sonar.squid.api.SourceCode;
+import org.sonar.squid.api.SourceFile;
+import org.sonar.squid.api.SourcePackage;
 import org.sonar.squid.api.SourceProject;
 import org.sonar.squid.measures.MetricDef;
 
@@ -33,15 +37,15 @@ import de.lgohlke.syntaxhighlighter.CodeDocumentGeneratorFactory;
 @RequiredArgsConstructor
 public final class MetricAnalyzer
 {
+  private static final String  ANALYZE_SOURCE_DIR_PARAM = "analyze.source.dir";
+  private static final String  ANALYZE_OUTPUT_DIR_PARAM = "analyze.output.dir";
   @Getter
-  private final List<File>           directoriesToAnalyse = new ArrayList<File>();
+  private final List<File>     directoriesToAnalyse     = new ArrayList<File>();
   @Getter
-  private File                       directoryToWriteTo;
-  private AstProcessor               processor;
+  private File                 directoryToWriteTo;
+  private AstProcessor         processor;
 
-  @Getter
-  private AnalysisTestFilter         analysisTestFilter;
-  private final MutablePicoContainer pico                 = PicoContainerFactory.createContainer();
+  private MutablePicoContainer pico                     = PicoContainerFactory.createContainer();
 
   // System.getProperty("user.dir") + "/src/test/java/de/lgohlke/io"
   // private final static String defaultAnalyzeDir =
@@ -51,10 +55,46 @@ public final class MetricAnalyzer
   // "/home/lars/Downloads/sources/org.apache.squashfs.d/org.apche.activemq_trunk";
   // private final static String defaultAnalyzeDir =
   // "/home/lars/Downloads/sources/org.apache.squashfs.d/org.apache.camel_trunk/components/camel-jetty";
-  // private final static String defaultAnalyzeDir =
-  // "/home/lars/Downloads/sources/org.apache.squashfs.d/org.apache.camel_trunk/components/camel-bindy,/home/lars/Downloads/sources/org.apache.squashfs.d/org.apache.camel_trunk/components/camel-hdfs";
-  // private final static String defaultAnalyzeDir =
-  // "/home/lars/Downloads/sources/compressed_source.commons.squashfs.d";
+  private final static String defaultAnalyzeDir = System.getProperty("user.dir");
+  //  private final static String  defaultAnalyzeDir        = "/home/lars/Downloads/sources/org.apache.squashfs.d/org.apache.camel_trunk/components/camel-bindy,/home/lars/Downloads/sources/org.apache.squashfs.d/org.apache.camel_trunk/components/camel-hdfs";
+  //  private final static String defaultAnalyzeDir =  "/home/lars/Downloads/sources/compressed_source.commons.squashfs.d";
+  /**
+   * <p>
+   * main.
+   * </p>
+   * 
+   * @param args
+   *          an array of {@link java.lang.String} objects.
+   * @throws java.lang.InstantiationException
+   *           if any.
+   * @throws Exception
+   */
+  public static void main(final String[] args) throws Exception
+  {
+    File directoryToAnalyse = getParam(ANALYZE_SOURCE_DIR_PARAM, defaultAnalyzeDir);
+    File directoryToWriteTo = getParam(ANALYZE_OUTPUT_DIR_PARAM, System.getProperty("user.dir") + "/target/analysis");
+
+    MetricAnalyzer analyzer = new MetricAnalyzer();
+
+    if (directoryToAnalyse.getAbsolutePath().contains(","))
+    {
+      String[] paths = directoryToAnalyse.getAbsolutePath().split("\\ *,\\ *");
+      for (String path : paths)
+      {
+        analyzer.addDirectoryForAnalysis(new File(path));
+      }
+    }
+    else
+    {
+      analyzer.addDirectoryForAnalysis(directoryToAnalyse);
+    }
+
+    long start = System.currentTimeMillis();
+
+    analyzer.writeTo(directoryToWriteTo).analyze();
+    long end = System.currentTimeMillis();
+    log.info(String.format("finished after : %.2fs", (float) (end - start) / 1000));
+  }
 
   public MetricAnalyzer writeTo(final File directoryToWriteTo2)
   {
@@ -68,6 +108,18 @@ public final class MetricAnalyzer
     return this;
   }
 
+  private static File getParam(final String key, final String defaultValue)
+  {
+    if (System.getProperties().keySet().contains(key) && (System.getProperty(key).length() > 0))
+    {
+      return new File(System.getProperty(key));
+    }
+    else
+    {
+      return new File(defaultValue);
+    }
+  }
+
   private SourceProject processingAst() throws IOException, AstProcessorException
   {
     processor = new AstProcessor(pico);
@@ -75,7 +127,7 @@ public final class MetricAnalyzer
     List<MetricDef> metrics = new ArrayList<MetricDef>();
 
     metrics.addAll(MetricsWorthToAnalyze.LIST);
-    // metrics.addAll(Arrays.asList(Metric.values()));
+    //    metrics.addAll(Arrays.asList(Metric.values()));
     log.debug("starting adding directories to astprocessor");
     processor.addDirectories(directoriesToAnalyse.toArray(new File[directoriesToAnalyse.size()]));
     log.debug("finished adding directories to astprocessor");
@@ -102,57 +154,36 @@ public final class MetricAnalyzer
 
   public void analyze() throws Exception
   {
-    if ((analysisTestFilter != null) && analysisTestFilter.isActive() && (analysisTestFilter.getFilter().getFailedTests().size() <= 1))
+    SourceProject project = processingAst();
+
+    new RelatedCodeMetricAggregator(pico, processor.getSquid(), processor.getRegistry().getLocationList(), processor.getRegistry()).doAggregation();
+
+    printTestMethodStats(project);
+
+    CodeDocumentGenerator codeDocumentGenerator = CodeDocumentGeneratorFactory.createDefaultInstance(pico, project, getDirectoryToWriteTo(),
+        processor.getSquid());
+    try
     {
-      // no need for any analysis
-      log.info("filter tells me the size of tests found are 0 or 1, so I stop here");
+      codeDocumentGenerator.generate(processor.getRegistry());
     }
-    else
+    catch (IOException e)
     {
-      SourceProject project = processingAst();
-
-      new RelatedCodeMetricAggregator(pico, processor.getSquid(), processor.getRegistry().getLocationList(), processor.getRegistry()).doAggregation();
-
-      // printTestMethodStats(project);
-
-      CodeDocumentGenerator codeDocumentGenerator = CodeDocumentGeneratorFactory.createDefaultInstance(pico, project, getDirectoryToWriteTo(),
-          processor.getSquid());
-      try
-      {
-        if (analysisTestFilter != null)
-        {
-          codeDocumentGenerator.setAnalysisTestFilter(analysisTestFilter);
-        }
-        codeDocumentGenerator.generate(processor.getRegistry());
-      }
-      catch (IOException e)
-      {
-        log.error(e.getMessage() + "", e);
-      }
+      log.error(e.getMessage() + "", e);
     }
     log.info("finished");
-
-    log.info("\n\n\n see " + directoryToWriteTo.getAbsolutePath() + " for additional help for analysing the problems \n\n\n");
   }
 
-  // private static void printTestMethodStats(final SourceCode code)
-  // {
-  // if (code.hasChildren())
-  // {
-  // if ((code.isType(SourceProject.class) || code.isType(SourcePackage.class) || code.isType(SourceFile.class) ||
-  // code.isType(SourceClass.class)))
-  // {
-  // for (SourceCode s : code.getChildren())
-  // {
-  // printTestMethodStats(s);
-  // }
-  // }
-  // }
-  // }
-
-  public MetricAnalyzer filter(final AnalysisTestFilter analysisTestFilter)
+  private static void printTestMethodStats(final SourceCode code)
   {
-    this.analysisTestFilter = analysisTestFilter;
-    return this;
+    if (code.hasChildren())
+    {
+      if ((code.isType(SourceProject.class) || code.isType(SourcePackage.class) || code.isType(SourceFile.class) || code.isType(SourceClass.class)))
+      {
+        for (SourceCode s : code.getChildren())
+        {
+          printTestMethodStats(s);
+        }
+      }
+    }
   }
 }

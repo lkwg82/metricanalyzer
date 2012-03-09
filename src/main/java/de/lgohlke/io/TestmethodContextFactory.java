@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import com.thoughtworks.qdox.model.JavaMethod;
 
@@ -22,7 +23,7 @@ import de.lgohlke.qdox.JavaMethodHashed;
  * @version $Id: $
  */
 @RequiredArgsConstructor
-//@Slf4j
+@Slf4j
 public class TestmethodContextFactory
 {
   /**

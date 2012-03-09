@@ -1,11 +1,9 @@
 package de.lgohlke.syntaxhighlighter;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -18,9 +16,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.NullArgumentException;
+import org.apache.commons.lang.StringUtils;
 import org.picocontainer.MutablePicoContainer;
 import org.sonar.squid.Squid;
 import org.sonar.squid.api.SourceCode;
@@ -30,17 +28,13 @@ import org.sonar.squid.measures.MetricDef;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 import com.thoughtworks.qdox.model.JavaMethod;
 
-import de.lgohlke.AnalysisTestFilter;
 import de.lgohlke.CommonStore;
 import de.lgohlke.AST.ASTMetrics;
 import de.lgohlke.AST.Registry;
 import de.lgohlke.AST.VisitorKey;
 import de.lgohlke.analyzer.MetricsWorthToAnalyze;
 import de.lgohlke.analyzer.SourceCodeFinder;
-import de.lgohlke.analyzer.sorting.StandardTestOrder;
-import de.lgohlke.analyzer.sorting.TestAnalysisOrderer;
 import de.lgohlke.concurrent.ThreadPool;
-import de.lgohlke.failedTestsfilter.FailedTest;
 import de.lgohlke.io.RelatedTestsFinder;
 import de.lgohlke.io.TestmethodContext;
 import de.lgohlke.io.TestmethodContextFactory;
@@ -57,31 +51,25 @@ import de.lgohlke.qdox.JavaMethodHashed;
 @Slf4j
 public class CodeDocumentGenerator
 {
-  private final MutablePicoContainer   pico;
+  private final MutablePicoContainer pico;
 
   @Getter
   @Setter
-  private File                         resourcePath;
+  private File                       resourcePath;
   @Getter
   @Setter
-  private File                         targetDirectory;
+  private File                       targetDirectory;
 
-  private static final String          subDirClasses       = "classes";
-  private static final String          subDirMethods       = "testmethods";
-  private static final String          subDirMethodsSource = "testmethodsSource";
+  private static final String        subDirClasses       = "classes";
+  private static final String        subDirMethods       = "testmethods";
+  private static final String        subDirMethodsSource = "testmethodsSource";
 
-  private final ThreadPool             writerQueue         = new ThreadPool(1);
-  private final ThreadPool             workerPool          = ThreadPool.getInstance();
+  private final ThreadPool           writerQueue         = new ThreadPool(1);
+  private final ThreadPool           workerPool          = ThreadPool.getInstance();
 
-  private final CommonStore            store;
+  private CommonStore                store;
 
-  private final Squid                  squid;
-
-  @Setter
-  private AnalysisTestFilter           analysisTestFilter;
-
-  private HashMap<String, Set<String>> failedTests;
-  Map<String, SourceCode>              test2code           = new HashMap<String, SourceCode>();
+  private Squid                      squid;
 
   public CodeDocumentGenerator(final MutablePicoContainer pico, final Squid squid)
   {
@@ -112,11 +100,6 @@ public class CodeDocumentGenerator
       throw new NullArgumentException("targetDirectory");
     }
 
-    failedTests = new HashMap<String, Set<String>>();
-    fillLocalFailedTestsList();
-    fillMapTest2Code();
-    List<FailedTest> orderedFailedTests = getOrderedFailedTests();
-
     initTargetDirectory();
 
     log.info("generating files per class");
@@ -124,8 +107,6 @@ public class CodeDocumentGenerator
 
     log.info("generating files per testmethod");
     generateFilePerTestMethod(registry);
-
-    generateTestOrderList(orderedFailedTests);
 
     workerPool.waitForShutdown();
 
@@ -137,61 +118,6 @@ public class CodeDocumentGenerator
     generateOverviewForTests();
     writerQueue.waitForShutdown();
     log.info("complete");
-  }
-
-  private void generateTestOrderList(final List<FailedTest> orderedFailedTests)
-  {
-    final File file = new File(targetDirectory.getAbsolutePath() + "/orderedList.html");
-
-    final TestOverviewTable table = new TestOverviewTable(2);
-
-    table.headCell("name").headCell("score");
-
-    for (FailedTest test : orderedFailedTests)
-    {
-      table.cell(test.getClazz() + "#" + test.getMethod());
-
-      SourceCode code = test2code.get(test.getClazz() + "#" + test.getMethod());
-      //      int score =0;
-      table.cell( new StandardTestOrder().weightMetric(code) +"");
-    }
-    writerQueue.submit(new Runnable()
-    {
-
-      @Override
-      public void run()
-      {
-        try
-        {
-          FileUtils.writeStringToFile(file, table.toString());
-        }
-        catch (IOException e)
-        {
-          e.printStackTrace();
-        }
-
-      }
-    });
-  }
-
-  private List<FailedTest> getOrderedFailedTests() throws ConfigurationException, IOException
-  {
-    return TestAnalysisOrderer.useMap(test2code).orderWith(new StandardTestOrder());
-  }
-
-  private void fillLocalFailedTestsList() throws IOException, ConfigurationException
-  {
-    if ((analysisTestFilter != null) && analysisTestFilter.isActive())
-    {
-      for (FailedTest test : analysisTestFilter.getFilter().getFailedTests())
-      {
-        if (!failedTests.containsKey(test.getClazz()))
-        {
-          failedTests.put(test.getClazz(), new HashSet<String>());
-        }
-        failedTests.get(test.getClazz()).add(test.getMethod());
-      }
-    }
   }
 
   private void generateOverviewForTests()
@@ -206,58 +132,56 @@ public class CodeDocumentGenerator
     // document.text("<div><p>&nbsp;</p></div>");
     // }
 
-    HtmlTable table = new TestOverviewTable(2 + MetricsWorthToAnalyze.LIST.size());
+    HtmlTable table = new TestOverviewTable(1 + MetricsWorthToAnalyze.LIST.size());
     {
       table.setStyle("width:40% !important;");
       // table.setColumnStyle("<col style=\"width:70%\"/><col span=\"15\" style=\"width:15px\"/>");
     }
     // header
-    table.headCell("test");
+    table.cell("test");
     b.append("test");
     for (MetricDef m : MetricsWorthToAnalyze.LIST)
     {
       // String[] splitted = m.getName().split("");
       // String joined = StringUtils.join(splitted, "</br>");
 
-      table.headCell("<div><span style=\"width:40px;\">" + m.getName() + "</span></div>");
-
+      table.cell("<div><span>" + m.getName() + "</span></div>");
       b.append("|" + m.getName());
     }
-
-    table.headCell("<div><span style=\"width:40px;\">testOrderScore</span></div>");
-
     b.append('\n');
 
-    for (Entry<String, SourceCode> entry : test2code.entrySet())
+    for (TestClass clazz : store.getTestClasses())
     {
-      if (entry.getValue() == null)
+      if (log.isDebugEnabled())
       {
-        log.error("code was null for " + entry.getKey());
+        log.debug("generating for TestClass " + clazz);
       }
-      else
-      {
-        // alway <class>#<method>
-        String[] parts= entry.getKey().split("#");
-        String clazz = parts[0].replaceFirst("#", ".");
-        String test= parts[1];
 
-        String link = clazz + "#" + test;
-        link = link.replaceFirst("\\(.*", "");
-        link = link.replaceAll(".*\\ ", "");
-        //        String linkText = StringUtils.reverse(StringUtils.reverse(link).replaceFirst("\\.", "#"));
-        String linkText = link;
-        table.cell("<a href=\"testmethods/" + linkText.replaceAll("#", "%23") + "().html\">" + linkText + "</a>");
-        b.append(test);
-        for (MetricDef metric : MetricsWorthToAnalyze.LIST)
+      for (TestMethod test : clazz.getTests())
+      {
+        SourceCode code = new SourceCodeFinder(squid).findSourceCodeFor(test.getMethod());
+
+        if (code == null)
         {
-          String metricFormatted = new MetricFormatter(metric, entry.getValue()).toString();
-          table.cell(metricFormatted);
-          b.append("|" + metricFormatted);
-        }
 
-        table.cell(new StandardTestOrder().weightMetric(entry.getValue()) +"");
+        }
+        else
+        {
+          String link = test.getMethod().toString();
+          link = link.replaceFirst("\\(.*", "");
+          link = link.replaceAll(".*\\ ", "");
+          String linkText = StringUtils.reverse(StringUtils.reverse(link).replaceFirst("\\.", "#"));
+          table.cell("<a href=\"testmethods/" + linkText.replace("#", "%23") + "().html\">" + linkText + "</a>");
+          b.append(test.getMethod());
+          for (MetricDef metric : MetricsWorthToAnalyze.LIST)
+          {
+            String metricFormatted = new MetricFormatter(metric, code).toString();
+            table.cell(metricFormatted);
+            b.append("|" + metricFormatted);
+          }
+        }
+        b.append('\n');
       }
-      b.append('\n');
     }
 
     document.text("<div id=\"metricHint\" name=\"" + subDirMethodsSource + "\"></div>");
@@ -284,36 +208,6 @@ public class CodeDocumentGenerator
     });
   }
 
-  /**
-   * 
-   */
-  private void fillMapTest2Code()
-  {
-    for (TestClass clazz : store.getTestClasses())
-    {
-      String _clazz = clazz.getClazz().getFullyQualifiedName();
-      if (failedTests.isEmpty() || failedTests.containsKey(_clazz))
-      {
-        if (log.isDebugEnabled())
-        {
-          log.debug("generating for TestClass " + clazz);
-        }
-
-        for (TestMethod test : clazz.getTests())
-        {
-          String method = test.getMethod().getName();
-          if (failedTests.isEmpty() || failedTests.get(_clazz).contains(method))
-          {
-            SourceCode code = new SourceCodeFinder(squid).findSourceCodeFor(test.getMethod());
-
-            String key = _clazz + "#" + method;
-            test2code.put(key, code);
-          }
-        }
-      }
-    }
-  }
-
   private void generateFilePerTestMethod(final Registry registry) throws IOException
   {
     String baseDir = targetDirectory.getAbsolutePath() + "/" + subDirMethods;
@@ -321,26 +215,18 @@ public class CodeDocumentGenerator
 
     for (TestClass clazz : store.getTestClasses())
     {
-      String _clazz = clazz.getClazz().getFullyQualifiedName();
-      if (failedTests.isEmpty() || failedTests.containsKey(_clazz))
+      if (log.isDebugEnabled())
       {
-        if (log.isDebugEnabled())
-        {
-          log.debug("generating for TestClass " + clazz);
-        }
+        log.debug("generating for TestClass " + clazz);
+      }
 
-        for (TestMethod test : clazz.getTests())
-        {
-          String method = test.getMethod().getName();
-          if (failedTests.isEmpty() || failedTests.get(_clazz).contains(method))
-          {
-            log.info("generating docs for " + test);
-            // documents with detailed information
-            workerPool.submit(createDocumentJob(new DocumentJobconfiguration(clazz, test, registry, baseDir, pico)));
-            // documents for the overlay
-            workerPool.submit(createSimpleDocumentJob(new DocumentJobconfiguration(clazz, test, registry, baseDirSource, pico)));
-          }
-        }
+      for (TestMethod test : clazz.getTests())
+      {
+        log.debug("generating docs for " + test);
+        // documents with detailed information
+        workerPool.submit(createDocumentJob(new DocumentJobconfiguration(clazz, test, registry, baseDir, pico)));
+        // documents for the overlay
+        workerPool.submit(createSimpleDocumentJob(new DocumentJobconfiguration(clazz, test, registry, baseDirSource, pico)));
       }
     }
   }
@@ -731,43 +617,25 @@ public class CodeDocumentGenerator
     return new DocumentJob(c, squid, writerQueue);
   }
 
-  private void generateSimpleFilePerClass() throws IOException, ConfigurationException
+  private void generateSimpleFilePerClass() throws IOException
   {
     String baseDir = targetDirectory.getAbsolutePath() + "/" + subDirClasses;
     for (TestClass clazz : store.getTestClasses())
     {
-      if (failedTests.isEmpty() || failedTests.containsKey(clazz.getClazz().getFullyQualifiedName()))
-      {
-        String title = clazz.getClazz().getFullyQualifiedName();
-        final File html = new File(baseDir + "/" + title + ".html");
+      String title = clazz.getClazz().getFullyQualifiedName();
+      File html = new File(baseDir + "/" + title + ".html");
 
-        CodeSnippet codeSnippet = new CodeSnippet(clazz);
-        DivTable divTable = new DivTable().//
-            width(1300, 200).//
-            cell(codeSnippet.toString()).//
-            cell("test");
+      CodeSnippet codeSnippet = new CodeSnippet(clazz);
+      DivTable divTable = new DivTable().//
+          width(1300, 200).//
+          cell(codeSnippet.toString()).//
+          cell("test");
 
-        final CodeDocument document = new CodeDocument().//
-            title(title).//
-            baseDirectory("../").//
-            text(divTable.toString());//
-
-        writerQueue.submit(new Runnable()
-        {
-          @Override
-          public void run()
-          {
-            try
-            {
-              document.writeToFile(html);
-            }
-            catch (IOException e)
-            {
-              e.printStackTrace();
-            }
-          }
-        });
-      }
+      new CodeDocument().//
+      title(title).//
+      baseDirectory("../").//
+      text(divTable.toString()).//
+      writeToFile(html);
     }
   }
 
@@ -789,19 +657,12 @@ public class CodeDocumentGenerator
     File cssSourceDir = new File(resourcePath.getAbsolutePath() + "/styles");
     File cssDir = new File(targetDirectory.getAbsolutePath() + "/styles");
 
-    try
-    {
-      FileUtils.copyDirectory(scriptSourceDir, scriptDir);
-      FileUtils.copyDirectory(cssSourceDir, cssDir);
+    FileUtils.copyDirectory(scriptSourceDir, scriptDir);
+    FileUtils.copyDirectory(cssSourceDir, cssDir);
 
-      for (File myFile : FileUtils.listFiles(new File("src/main/resources"), new String[] { "css", "js" }, false))
-      {
-        FileUtils.copyFile(myFile, new File(targetDirectory.getAbsolutePath() + "/" + myFile.getName()));
-      }
-    }
-    catch (FileNotFoundException e)
+    for (File myFile : FileUtils.listFiles(new File("src/main/resources"), new String[] { "css", "js" }, false))
     {
-      log.warn("could not copy scripts : " + e.getMessage());
+      FileUtils.copyFile(myFile, new File(targetDirectory.getAbsolutePath() + "/" + myFile.getName()));
     }
   }
 }

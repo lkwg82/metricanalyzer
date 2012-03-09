@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.sonar.java.ast.visitor.JavaAstVisitor;
 import org.sonar.squid.api.SourceCode;
 
@@ -24,14 +26,14 @@ import de.lgohlke.AST.VisitorKey;
  * @author lars
  * @version $Id: $
  */
-//@Slf4j
+@Slf4j
 public class AssertCountVisitor extends JavaAstVisitor
 {
   public static final List<Integer> WANTED_TOKENS = Arrays.asList(TokenTypes.METHOD_CALL);
   private final Registry            registry;
   private AstHelper                 astHelper     = null;
   private String                    keyFile;
-  private final JavaAstVisitorHelper      visitorHelper;
+  private JavaAstVisitorHelper      visitorHelper;
 
   public AssertCountVisitor(final Registry registry)
   {

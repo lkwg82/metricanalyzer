@@ -81,7 +81,7 @@ public class JavaDocBuilderFascade extends JavaDocBuilder
     catch (ArrayIndexOutOfBoundsException e)
     {
       // see http://jira.codehaus.org/browse/QDOX-237
-      log.error("parser error in qdox: " + e.getMessage() + " in file " + file);
+      log.error("parser error in qdox: " + e.getMessage() + " in file " + file) ;
     }
     return result;
   }

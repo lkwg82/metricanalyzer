@@ -35,7 +35,7 @@ public class TestOverviewTable extends HtmlTable
   protected void handleRowStart(final StringBuffer b, final int row)
   {
     b.append("\t");
-    b.append(String.format("<tr id=\"row_%d\" style=\"%s\">", row, row == -1 ? "height:400px;vertical-align:bottom;" : ""));
+    b.append(String.format("<tr id=\"row_%d\" style=\"%s\">", row, row == 0 ? "height:400px;vertical-align:bottom;" : ""));
     b.append("\n");
   }
 

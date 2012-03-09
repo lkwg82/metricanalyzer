@@ -15,6 +15,8 @@ import lombok.Getter;
 
 import org.sonar.squid.measures.MetricDef;
 
+import de.lgohlke.collection.CompressedHashMap;
+
 /**
  * <p>
  * Registry class.
@@ -70,6 +72,11 @@ public class Registry
 
     b.append(String.format(format, "code [keys]", code.keySet().size(), computeStringSizes(code.keySet().toArray(new VisitorKey[code.keySet().size()]))));
     b.append(String.format(format, "code [values]", code.values().size(), computeStringSizes(code.values())));
+
+    if (code instanceof CompressedHashMap)
+    {
+      ((CompressedHashMap) code).printStats();
+    }
 
     return b.toString();
   }

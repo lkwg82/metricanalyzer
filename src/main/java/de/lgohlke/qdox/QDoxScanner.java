@@ -23,46 +23,45 @@ import de.lgohlke.AST.Registry;
 @Slf4j
 @RequiredArgsConstructor
 public class QDoxScanner
+{private final Registry registry;
+private final List<IQDoxScanHandler> scanHandlerList = new ArrayList<IQDoxScanHandler>();
+
+private JavaDocBuilderFascade  docBuilder;
+
+public QDoxScanner addScanHandler(final IQDoxScanHandler handler)
 {
-  private final Registry               registry;
-  private final List<IQDoxScanHandler> scanHandlerList = new ArrayList<IQDoxScanHandler>();
+  docBuilder = new JavaDocBuilderFascade(registry);
+  scanHandlerList.add(handler);
+  return this;
+}
 
-  private JavaDocBuilderFascade        docBuilder;
-
-  public QDoxScanner addScanHandler(final IQDoxScanHandler handler)
+/**
+ * <p>
+ * scan.
+ * </p>
+ * 
+ * @throws java.io.IOException
+ *           if any.
+ */
+public void scan(final File file) throws IOException
+{
+  log.debug("scanning " + file);
+  if (file.isDirectory())
   {
-    docBuilder = new JavaDocBuilderFascade(registry);
-    scanHandlerList.add(handler);
-    return this;
+    docBuilder.addSourceTree(file);
+  }
+  else
+  {
+    docBuilder.addSource(file);
   }
 
-  /**
-   * <p>
-   * scan.
-   * </p>
-   * 
-   * @throws java.io.IOException
-   *           if any.
-   */
-  public void scan(final File file) throws IOException
+  for (JavaSource source : docBuilder.getSources())
   {
-    log.debug("scanning " + file);
-    if (file.isDirectory())
+    for (IQDoxScanHandler handler : scanHandlerList)
     {
-      docBuilder.addSourceTree(file);
-    }
-    else
-    {
-      docBuilder.addSource(file);
-    }
-
-    for (JavaSource source : docBuilder.getSources())
-    {
-      for (IQDoxScanHandler handler : scanHandlerList)
-      {
-        handler.scanSource(source);
-      }
+      handler.scanSource(source);
     }
   }
+}
 
 }

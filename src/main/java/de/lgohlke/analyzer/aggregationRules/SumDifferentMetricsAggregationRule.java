@@ -9,6 +9,11 @@ import de.lgohlke.analyzer.MetricAccessor;
  * aggregation of metrics by summing them up
  * 
  * @author lars
+ * @version $Id: $
+ */
+//@Slf4j
+/**
+ * @author lars
  *
  */
 public class SumDifferentMetricsAggregationRule extends MetricAggregationRuleAbstract
@@ -16,9 +21,8 @@ public class SumDifferentMetricsAggregationRule extends MetricAggregationRuleAbs
   private final MetricDef[] metrics;
 
   /**
-   * sums up many metrics into on
-   * @param metric - sums up into this metric
-   * @param metrics - metrics to be summed up
+   * @param metric
+   * @param metrics
    */
   public SumDifferentMetricsAggregationRule(final MetricDef metric, final MetricDef ... metrics)
   {

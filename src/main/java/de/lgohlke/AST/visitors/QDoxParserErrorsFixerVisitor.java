@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.List;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import org.sonar.java.ast.visitor.JavaAstVisitor;
 
@@ -13,7 +14,7 @@ import de.lgohlke.AST.AstHelper;
 import de.lgohlke.AST.Registry;
 
 @RequiredArgsConstructor
-//@Slf4j
+@Slf4j
 public class QDoxParserErrorsFixerVisitor extends JavaAstVisitor
 {
   private final Registry registry;

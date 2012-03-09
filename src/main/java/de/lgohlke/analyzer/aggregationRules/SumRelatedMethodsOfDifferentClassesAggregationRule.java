@@ -48,6 +48,8 @@ public class SumRelatedMethodsOfDifferentClassesAggregationRule extends MetricAg
   {
     @SuppressWarnings("rawtypes")
     List<Measurable> measurables = new ArrayList<Measurable>();
+    SumAggregationFormula formula = new SumAggregationFormula();
+
     if (log.isDebugEnabled())
     {
       log.debug("metric : " + getMetric());
@@ -75,6 +77,6 @@ public class SumRelatedMethodsOfDifferentClassesAggregationRule extends MetricAg
       }
     }
 
-    accessor.retrieveTestMethod().add(getMetric(), new SumAggregationFormula().aggregate(getMetric(), measurables));
+    accessor.retrieveTestMethod().add(getMetric(), formula.aggregate(getMetric(), measurables));
   }
 }

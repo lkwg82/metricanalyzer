@@ -1,48 +1,27 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
    <modelVersion>4.0.0</modelVersion>
+   <groupId>de.lgohlke.master</groupId>
+   <artifactId>MetricsAnalyzer</artifactId>
+   <version>0.3</version>
+   <name>MetricsAnalyzer</name>
+   <scm>
+      <!-- <connection>scm:svn:https://master.lgohlke.de/_svn/projects/MetricAnalyzer/trunk</connection> -->
+      <developerConnection>scm:svn:https://master.lgohlke.de/_svn/projects/MetricsAnalyzer/tags/MetricsAnalyzer-0.3</developerConnection>
+   </scm>
 
    <parent>
       <groupId>de.lgohlke.poms</groupId>
       <artifactId>parent</artifactId>
       <version>2</version>
-      <relativePath>../pom.xml</relativePath>
    </parent>
-
-   <groupId>de.lgohlke.master</groupId>
-   <artifactId>MetricsAnalyzer</artifactId>
-   <version>0.6-SNAPSHOT</version>
-   <name>MetricsAnalyzer</name>
-
-   <scm>
-      <!-- <connection>scm:svn:https://master.lgohlke.de/_svn/projects/MetricAnalyzer/trunk</connection> -->
-      <developerConnection>scm:svn:https://master.lgohlke.de/_svn/projects/MetricsAnalyzer/trunk</developerConnection>
-   </scm>
 
    <properties>
       <sonar.version>2.10</sonar.version>
-      <lombok.version>0.10.2</lombok.version>
+      <lombok.version>0.10.1</lombok.version>
       <scm.path>https://master.lgohlke.de/_svn/projects/MetricsAnalyzer/trunk</scm.path>
-      <java.main.class>de.lgohlke.runner.CLIRunner</java.main.class>
-      <test-type>NONE</test-type>
    </properties>
 
    <repositories>
-      <repository>
-         <id>de.lgohlke.maven3</id>
-         <url>http://repos3.lgohlke.de</url>
-      </repository>
-      <repository>
-         <id>de.lgohlke.maven3.snaps</id>
-         <url>http://snapshots3.lgohlke.de</url>
-      </repository>
-      <repository>
-         <id>de.lgohlke.maven2.snaps</id>
-         <url>http://snapshots.lgohlke.de/maven2</url>
-      </repository>
-      <repository>
-         <id>de.lgohlke.maven2</id>
-         <url>http://repos.lgohlke.de/maven2</url>
-      </repository>
       <repository>
          <id>gson</id>
          <url>http://google-gson.googlecode.com/svn/mavenrepo</url>
@@ -72,7 +51,7 @@
          </exclusions>
       </dependency>
       <!-- unit tests -->
-      <!-- <dependency> <groupId>org.codehaus.sonar</groupId> <artifactId>sonar-testing-harness</artifactId>
+      <!-- <dependency> <groupId>org.codehaus.sonar</groupId> <artifactId>sonar-testing-harness</artifactId> 
          <version>${sonar.version}</version> </dependency> -->
       <dependency>
          <groupId>org.codehaus.sonar</groupId>
@@ -112,7 +91,7 @@
          <version>1.12</version>
          <!-- <scope>test</scope> -->
       </dependency>
-      <!-- <dependency> <groupId>org.testng</groupId> <artifactId>testng</artifactId>
+      <!-- <dependency> <groupId>org.testng</groupId> <artifactId>testng</artifactId> 
          <version>5.14.10</version> <scope>test</scope> </dependency> -->
       <dependency>
          <groupId>junit</groupId>
@@ -131,9 +110,9 @@
          <groupId>commons-logging</groupId>
          <artifactId>commons-logging</artifactId>
       </dependency>
-      <!-- <dependency> <groupId>commons-codec</groupId> <artifactId>commons-codec</artifactId>
+      <!-- <dependency> <groupId>commons-codec</groupId> <artifactId>commons-codec</artifactId> 
          </dependency> -->
-      <!-- <dependency> <groupId>commons-lang</groupId> <artifactId>commons-lang</artifactId>
+      <!-- <dependency> <groupId>commons-lang</groupId> <artifactId>commons-lang</artifactId> 
          <version>2.6</version> </dependency> -->
       <!-- Gson: Java to Json conversion -->
       <dependency>
@@ -159,7 +138,7 @@
       <dependency>
          <groupId>de.lgohlke</groupId>
          <artifactId>commons</artifactId>
-         <version>0.3</version>
+         <version>0.0.1</version>
       </dependency>
       <dependency>
          <groupId>net.sf.ehcache</groupId>
@@ -187,38 +166,11 @@
          <artifactId>guava</artifactId>
          <version>r09</version>
       </dependency>
-      <dependency>
-         <groupId>net.sf.jopt-simple</groupId>
-         <artifactId>jopt-simple</artifactId>
-         <version>4.1</version>
-      </dependency>
-      <dependency>
-         <groupId>org.hamcrest</groupId>
-         <artifactId>hamcrest-core</artifactId>
-         <version>1.2.1</version>
-      </dependency>
-      <dependency>
-         <groupId>org.testng</groupId>
-         <artifactId>testng</artifactId>
-         <version>6.3</version>
-      </dependency>
    </dependencies>
 
    <build>
       <pluginManagement>
          <plugins>
-            <plugin>
-               <groupId>org.apache.maven.plugins</groupId>
-               <artifactId>maven-surefire-plugin</artifactId>
-               <version>2.10</version>
-               <dependencies>
-                  <dependency>
-                     <groupId>org.apache.maven.surefire</groupId>
-                     <artifactId>surefire-junit4</artifactId>
-                     <version>2.10</version>
-                  </dependency>
-               </dependencies>
-            </plugin>
             <plugin>
                <groupId>org.projectlombok</groupId>
                <artifactId>maven-lombok-plugin</artifactId>
@@ -238,7 +190,7 @@
                   <dependency>
                      <groupId>org.projectlombok</groupId>
                      <artifactId>lombok</artifactId>
-                     <version>0.9.3.1</version>
+                     <version>0.9.3</version>
                   </dependency>
                   <dependency>
                      <groupId>sun.jdk</groupId>
@@ -256,7 +208,7 @@
                   <archive>
                      <manifest>
                         <addClasspath>true</addClasspath>
-                        <mainClass>${java.main.class}</mainClass>
+                        <mainClass>de.lgohlke.MetricAnalyzer</mainClass>
                      </manifest>
                   </archive>
                </configuration>
@@ -271,15 +223,47 @@
                <tagBase>https://master.lgohlke.de/_svn/projects/MetricsAnalyzer/tags</tagBase>
             </configuration>
          </plugin>
-         <!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-assembly-plugin</artifactId>
-            <executions> <execution> <goals> <goal>attached</goal> </goals> <phase>package</phase>
-            <configuration> <descriptorRefs> <descriptorRef>jar-with-dependencies</descriptorRef>
-            </descriptorRefs> <archive> <manifest> <mainClass>${java.main.class}</mainClass>
-            </manifest> </archive> </configuration> </execution> </executions> </plugin> -->
-         <!-- <plugin> <groupId>org.codehaus.mojo</groupId> <artifactId>build-helper-maven-plugin</artifactId>
-            <version>1.7</version> <executions> <execution> <id>add-source</id> <phase>generate-sources</phase>
-            <goals> <goal>add-source</goal> </goals> <configuration> <sources> <source>src/main/aspect</source>
-            </sources> </configuration> </execution> </executions> </plugin> -->
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <executions>
+               <execution>
+                  <goals>
+                     <goal>attached</goal>
+                  </goals>
+                  <phase>package</phase>
+                  <configuration>
+                     <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                     </descriptorRefs>
+                     <archive>
+                        <manifest>
+                           <mainClass>de.lgohlke.MetricAnalyzer</mainClass>
+                        </manifest>
+                     </archive>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <version>1.7</version>
+            <executions>
+               <execution>
+                  <id>add-source</id>
+                  <phase>generate-sources</phase>
+                  <goals>
+                     <goal>add-source</goal>
+                  </goals>
+                  <configuration>
+                     <sources>
+                        <source>src/main/aspect</source>
+                     </sources>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
       </plugins>
    </build>
    <profiles>
@@ -297,13 +281,17 @@
                            <goal>java</goal>
                         </goals>
                         <configuration>
-                           <mainClass>${java.main.class}</mainClass>
-                           <arguments>
-                              <argument>--maven-project-path</argument>
-                              <argument>${maven-project-path}</argument>
-                              <argument>--test-type</argument>
-                              <argument>${test-type}</argument>
-                           </arguments>
+                           <mainClass>de.lgohlke.MetricAnalyzer</mainClass>
+                           <systemProperties>
+                              <systemProperty>
+                                 <key>analyze.source.dir</key>
+                                 <value>${analyze.source.dir}</value>
+                              </systemProperty>
+                              <systemProperty>
+                                 <key>analyze.output.dir</key>
+                                 <value>${analyze.output.dir}</value>
+                              </systemProperty>
+                           </systemProperties>
                         </configuration>
                      </execution>
                   </executions>

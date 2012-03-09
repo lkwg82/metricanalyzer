@@ -66,9 +66,10 @@ td div {
 	position: relative;
 }
 
-.header div span {
+.col-1 span,.col-2 span,.col-3 span,.col-4 span,.col-5 span,.col-6 span,.col-7 span,.col-8 span,.col-9 span,.col-10 span,.col-11 span,.col-12 span,.col-13 span,.col-14 span,.col-15 span,.col-16 span
+	{
 	display: inline-block;
-	position: relative;
+	position: absolute;
 	top: -00px;
 	left: 2px;
 	z-index: 100;
@@ -109,7 +110,7 @@ div#inlinesource {
 	overflow: visible !important;
 }
 
-td.col-1,td.col-2,td.col-3,td.col-4,td.col-5,td.col-6,td.col-7,td.col-8,td.col-9,td.col-10,td.col-11,td.col-12,td.col-13,td.col-14,td.col-15,td.col-16,td.col-17,td.col-18,td.col-19,td.col-20
+td.col-1,td.col-2,td.col-3,td.col-4,td.col-5,td.col-6,td.col-7,td.col-8,td.col-9
 	{
 	min-width: 25px;
 	text-align: right;

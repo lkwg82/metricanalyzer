@@ -6,12 +6,6 @@ import lombok.ToString;
 
 import com.thoughtworks.qdox.model.JavaMethod;
 
-/**
- * this class is only a wrapper for {@link JavaMethod} because of buggy {@link JavaMethod#equals(Object)}
- * 
- * @author lars
- *
- */
 @EqualsAndHashCode
 @ToString
 public class JavaMethodHashed
