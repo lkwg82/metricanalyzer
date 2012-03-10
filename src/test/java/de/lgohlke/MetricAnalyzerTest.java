@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import junit.framework.Assert;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,7 +28,7 @@ public class MetricAnalyzerTest
   @After
   public void after() throws IOException
   {
-    Files.deleteRecursively(outputDir);
+    FileUtils.deleteDirectory(outputDir);
   }
 
   @Test
