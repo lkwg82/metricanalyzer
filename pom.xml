@@ -10,12 +10,12 @@
 
 	<groupId>de.lgohlke.master</groupId>
 	<artifactId>MetricsAnalyzer</artifactId>
-	<version>0.6</version>
+	<version>0.7-SNAPSHOT</version>
 	<name>MetricsAnalyzer</name>
 
 	<scm>
 		<!-- <connection>scm:svn:https://master.lgohlke.de/_svn/projects/MetricAnalyzer/trunk</connection> -->
-		<developerConnection>scm:svn:https://metricanalyzer.googlecode.com/svn/tags/MetricsAnalyzer-0.6</developerConnection>
+		<developerConnection>scm:svn:https://metricanalyzer.googlecode.com/svn/trunk</developerConnection>
 	</scm>
 
 	<properties>
