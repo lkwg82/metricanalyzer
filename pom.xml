@@ -16,7 +16,7 @@
 
 	<scm>
 		<!-- <connection>scm:svn:https://master.lgohlke.de/_svn/projects/MetricAnalyzer/trunk</connection> -->
-		<developerConnection>scm:svn:https://master.lgohlke.de/_svn/projects/MetricsAnalyzer/trunk</developerConnection>
+		<developerConnection>scm:svn:https://metricanalyzer.googlecode.com/svn/trunk</developerConnection>
 	</scm>
 
 	<properties>
@@ -24,7 +24,7 @@
 		<sonar.version>2.13.1</sonar.version>
 		<lombok.version>0.10.8</lombok.version>
 		<delombok.version>0.9.3.1</delombok.version>
-		<scm.path>https://master.lgohlke.de/_svn/projects/MetricsAnalyzer/trunk</scm.path>
+		<scm.path>https://metricanalyzer.googlecode.com/svn/trunk</scm.path>
 		<java.main.class>de.lgohlke.runner.CLIRunner</java.main.class>
 		<test-type>NONE</test-type>
 	</properties>
@@ -222,7 +222,7 @@
 			<plugin>
 				<artifactId>maven-release-plugin</artifactId>
 				<configuration>
-					<tagBase>https://master.lgohlke.de/_svn/projects/MetricsAnalyzer/tags</tagBase>
+					<tagBase>https://metricanalyzer.googlecode.com/svn/tags</tagBase>
 				</configuration>
 			</plugin>
 			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-assembly-plugin</artifactId> 
