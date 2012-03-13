@@ -36,7 +36,7 @@ public class SourcePathFixerTest
     File path = new File(System.getProperty("user.dir"));
 
     Set<String> paths = fixer.scan(path);
-    Assert.assertEquals("should be 4 src/main/java, src/test/java and src/test/resources", 4, paths.size());
+    Assert.assertEquals("should be 3 src/main/java, src/test/java and src/test/resources", 3, paths.size());
     Assert.assertTrue("should contain src/main/java", paths.contains(new File("src").getAbsolutePath() + "/main/java"));
   }
 

@@ -80,7 +80,7 @@ public class CodeDocumentGenerator
   @Setter
   private AnalysisTestFilter           analysisTestFilter;
 
-  private HashMap<String, Set<String>> failedTests;
+  private Map<String, Set<String>>   failedTests;
   Map<String, SourceCode>              test2code           = new HashMap<String, SourceCode>();
 
   public CodeDocumentGenerator(final MutablePicoContainer pico, final Squid squid)

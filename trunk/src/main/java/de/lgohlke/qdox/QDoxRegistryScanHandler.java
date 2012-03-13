@@ -11,7 +11,7 @@ import de.lgohlke.AST.Registry;
 @RequiredArgsConstructor
 public class QDoxRegistryScanHandler implements IQDoxScanHandler
 {
-  final Registry registry;
+  private final Registry registry;
 
   @Override
   public void scanSource(final JavaSource source)

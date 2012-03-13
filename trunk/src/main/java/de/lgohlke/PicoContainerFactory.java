@@ -4,7 +4,7 @@ import org.picocontainer.MutablePicoContainer;
 import org.picocontainer.PicoBuilder;
 import org.picocontainer.gems.monitors.Slf4jComponentMonitor;
 
-public class PicoContainerFactory
+final public class PicoContainerFactory
 {
   private PicoContainerFactory(){
     // ok
