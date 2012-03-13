@@ -55,10 +55,10 @@ public class JavaSourceFileFinder
 				}
 			}
 		}
-		else
-		{
-
-		}
+		// else
+		// {
+		//
+		// }
 		return this;
 	}
 
