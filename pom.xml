@@ -19,7 +19,7 @@
 	</scm>
 
 	<properties>
-		<java.version>7</java.version>
+		<java.version>1.7</java.version>
 		<sonar.version>2.13.1</sonar.version>
 		<lombok.version>0.10.8</lombok.version>
 		<delombok.version>0.9.3.1</delombok.version>
