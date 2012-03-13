@@ -7,26 +7,26 @@ import de.lgohlke.io.bo.TEST_TYPE;
 
 public interface IFailedTestFilter
 {
-  /**
-   * show the type
-   * 
-   * @return
-   */
-  public TEST_TYPE getType();
+	/**
+	 * show the type
+	 * 
+	 * @return
+	 */
+	TEST_TYPE getType();
 
-  /**
-   * fresh seeking
-   * 
-   * @return
-   * @throws IOException
-   */
-  List<FailedTest> findFailedTests() throws IOException;
+	/**
+	 * fresh seeking
+	 * 
+	 * @return
+	 * @throws IOException
+	 */
+	List<FailedTest> findFailedTests() throws IOException;
 
-  /**
-   * lazy return already found results
-   * 
-   * @return
-   * @throws IOException
-   */
-  List<FailedTest> getFailedTests() throws IOException;
+	/**
+	 * lazy return already found results
+	 * 
+	 * @return
+	 * @throws IOException
+	 */
+	List<FailedTest> getFailedTests() throws IOException;
 }

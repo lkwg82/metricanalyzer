@@ -40,281 +40,282 @@ import de.lgohlke.qdox.JavaMethodHashed;
 @RequiredArgsConstructor
 public class RelatedTestsFinder
 {
-	private final MutablePicoContainer pico;
-	private final List<Location>       locationList;
-	private final Registry             registry;
+  private final MutablePicoContainer pico;
+  private final List<Location>       locationList;
+  private final Registry             registry;
 
-	@Getter
-	private RelatedTestsFinderResult   result;
+  @Getter
+  private RelatedTestsFinderResult   result;
 
-	// private Map<JavaClass, JavaClass> parentClassMap;
+  // private Map<JavaClass, JavaClass> parentClassMap;
 
-	private Map<Location, JavaMethod>  locationMethodMap;
+  private Map<Location, JavaMethod>  locationMethodMap;
 
-	private volatile int               count = 0;
-	private volatile int               step  = 0;
+  private volatile int               count = 0;
+  private volatile int               step  = 0;
 
-	/**
-	 * <p>
-	 * find.
-	 * </p>
-	 */
-	public void find()
-	{
-		Map<Location, JavaMethod> locationJavaMethodMap = new HashMap<Location, JavaMethod>();
-		final Map<TestMethod, Set<JavaMethodHashed>> testCodeMap = new ConcurrentHashMap<TestMethod, Set<JavaMethodHashed>>();
+  /**
+   * <p>
+   * find.
+   * </p>
+   */
+  public void find()
+  {
+    Map<Location, JavaMethod> locationJavaMethodMap = new HashMap<Location, JavaMethod>();
+    final Map<TestMethod, Set<JavaMethodHashed>> testCodeMap = new ConcurrentHashMap<TestMethod, Set<JavaMethodHashed>>();
 
-		initQdoxSearchBase();
+    initQdoxSearchBase();
 
-		for (Location loc : locationList)
-		{
-			JavaMethod method = findQDoxMethod(loc);
-			if (method == null)
-			{
-				if (loc.getClazz().startsWith("anonymousInner#"))
-				{
-					// ok, we would like to dismiss this
-					if (log.isDebugEnabled()) {
-						log.debug("dismiss anonymousInner#");
-					}
-				}
-				else if (loc.getKey().matches(".*\\$\\d+#.*"))
-				{
-					// is enum with methods
-					if (log.isDebugEnabled()) {
-						log.debug("is enum method : " + loc.getKey());
-					}
-				}
-				else
-				{
-					if (registry.getQdoxErrorParsedFiles().contains(loc.getFile()))
-					{
-						if (log.isDebugEnabled()) {
-							log.debug("is an qdox error parsed file");
-						}
-					}
-					else
-					{
-						log.warn("did not find : " + loc.getKey() + "\n" + loc.getFile());
-					}
-				}
-			}
-			else
-			{
-				locationJavaMethodMap.put(loc, method);
-			}
-		}
+    for (Location loc : locationList)
+    {
+      JavaMethod method = findQDoxMethod(loc);
+      if (method == null)
+      {
+        if (loc.getClazz().startsWith("anonymousInner#"))
+        {
+          // ok, we would like to dismiss this
+          if (log.isDebugEnabled())
+          {
+            log.debug("dismiss anonymousInner#");
+          }
+        }
+        else if (loc.getKey().matches(".*\\$\\d+#.*"))
+        {
+          // is enum with methods
+          if (log.isDebugEnabled())
+          {
+            log.debug("is enum method : " + loc.getKey());
+          }
+        }
+        else
+        {
+          if (registry.getQdoxErrorParsedFiles().contains(loc.getFile()))
+          {
+            if (log.isDebugEnabled())
+            {
+              log.debug("is an qdox error parsed file");
+            }
+          }
+          else
+          {
+            log.warn("did not find : " + loc.getKey() + "\n" + loc.getFile());
+          }
+        }
+      }
+      else
+      {
+        locationJavaMethodMap.put(loc, method);
+      }
+    }
 
-		ThreadPool pool = ThreadPool.getInstance();
-		/**
-		 * alle method finden, die für einen Tests relevant sind
-		 */
-		final int size = pico.getComponent(CommonStore.class).getTestClasses().size();
-		count = 0;
-		for (final TestClass testClass : pico.getComponent(CommonStore.class).getTestClasses())
-		{
-			pool.submit(new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					count++;
-					if ((((count * 100) / size) % 10) == 0)
-					{
-						if (step != ((count * 100) / size / 10))
-						{
-							step = (count * 100) / size / 10;
-							int progress = (count * 100) / size;
-							log.debug(count + "/" + size + " " + progress + "% testclass: " + testClass.getClazz().getName());
-						}
-					}
-					HashMap<TestMethod, Set<JavaMethodHashed>> tempTestCodeMap = new HashMap<TestMethod, Set<JavaMethodHashed>>();
+    ThreadPool pool = ThreadPool.getInstance();
+    /**
+     * alle method finden, die für einen Tests relevant sind
+     */
+    final int size = pico.getComponent(CommonStore.class).getTestClasses().size();
+    count = 0;
+    for (final TestClass testClass : pico.getComponent(CommonStore.class).getTestClasses())
+    {
+      pool.submit(new Runnable()
+      {
+        @Override
+        public void run()
+        {
+          count++;
+          int progress = (count * 100) / size;
+          if (((progress % 10) == 0) && (step != (progress / 10)))
+          {
+            step = progress / 10;
+            log.debug(count + "/" + size + " " + progress + "% testclass: " + testClass.getClazz().getName());
+          }
 
-					for (TestMethod method : testClass.getTests())
-					{
-						// log.debug("   testmethod: " + method);
-						// log.debug(" hash " + method.hashCode());
-						findConnectedMethods(method, tempTestCodeMap);
-					}
+          HashMap<TestMethod, Set<JavaMethodHashed>> tempTestCodeMap = new HashMap<TestMethod, Set<JavaMethodHashed>>();
 
-					testCodeMap.putAll(tempTestCodeMap);
-				}
-			});
-		}
+          for (TestMethod method : testClass.getTests())
+          {
+            // log.debug("   testmethod: " + method);
+            // log.debug(" hash " + method.hashCode());
+            findConnectedMethods(method, tempTestCodeMap);
+          }
 
-		pool.waitForShutdown();
+          testCodeMap.putAll(tempTestCodeMap);
+        }
+      });
+    }
 
-		result = new RelatedTestsFinderResult(testCodeMap, locationJavaMethodMap);
-	}
+    pool.waitForShutdown();
 
-	private void findConnectedMethods(final TestMethod method, final Map<TestMethod, Set<JavaMethodHashed>> testCodeMap)
-	{
-		findConnectedMethods(method, testCodeMap, method.getMethod().getParentClass());
-	}
+    result = new RelatedTestsFinderResult(testCodeMap, locationJavaMethodMap);
+  }
 
-	/**
-	 * @param method
-	 *          to seek for
-	 * @param testCodeMap
-	 *          - map to save the results
-	 */
-	private void findConnectedMethods(final TestMethod method, final Map<TestMethod, Set<JavaMethodHashed>> testCodeMap, final JavaClass clazz)
-	{
-		if (!testCodeMap.containsKey(method))
-		{
-			testCodeMap.put(method, new HashSet<JavaMethodHashed>());
-		}
+  private void findConnectedMethods(final TestMethod method, final Map<TestMethod, Set<JavaMethodHashed>> testCodeMap)
+  {
+    findConnectedMethods(method, testCodeMap, method.getMethod().getParentClass());
+  }
 
-		log.debug("seeking connected methods for " + method);
-		TEST_TYPE type = method.getType();
-		for (JavaMethod m : clazz.getMethods(false))
-		{
-			if (!m.equals(method.getMethod()))
-			{
-				/**
-				 * test-spezifische Annotationen enthalten?
-				 */
-				// System.out.println(m);
-				boolean lifecycleAnnotationForThisTypeFound = false;
-				for (Annotation a : m.getAnnotations())
-				{
-					if (!lifecycleAnnotationForThisTypeFound)
-					{
-						String annotationType = a.getType().getFullyQualifiedName();
-						// System.out.println("@" + annotationType);
+  /**
+   * @param method
+   *          to seek for
+   * @param testCodeMap
+   *          - map to save the results
+   */
+  private void findConnectedMethods(final TestMethod method, final Map<TestMethod, Set<JavaMethodHashed>> testCodeMap, final JavaClass clazz)
+  {
+    if (!testCodeMap.containsKey(method))
+    {
+      testCodeMap.put(method, new HashSet<JavaMethodHashed>());
+    }
 
-						if (type.getLifeCycleAnnotations().contains(annotationType))
-						{
-							log.debug("     method is connected : " + m.getName() + " " + a);
-							lifecycleAnnotationForThisTypeFound = true;
-							testCodeMap.get(method).add(new JavaMethodHashed(m));
-						}
-					}
-				}
-			}
-		}
-		JavaClass superClazz = clazz.getSuperJavaClass();
-		// log.debug("super class of " + clazz + " is " + superClazz);
-		// JavaClass superClazz = bugWorkAroundFindingCorrectSuperclass(clazz);
-		/**
-		 * calls recursivly with parent class
-		 */
-		if (!((superClazz == null) || "java.lang.Object".equals(superClazz.getFullyQualifiedName())))
-		{
+    log.debug("seeking connected methods for " + method);
+    TEST_TYPE type = method.getType();
+    for (JavaMethod m : clazz.getMethods(false))
+    {
+      if (!m.equals(method.getMethod()))
+      {
+        /**
+         * test-spezifische Annotationen enthalten?
+         */
+        // System.out.println(m);
+        boolean lifecycleAnnotationForThisTypeFound = false;
+        for (Annotation a : m.getAnnotations())
+        {
+          if (!lifecycleAnnotationForThisTypeFound)
+          {
+            String annotationType = a.getType().getFullyQualifiedName();
+            // System.out.println("@" + annotationType);
 
-			// log.debug("current           : " + clazz);
-			// log.debug("super             : " + clazz.getSuperJavaClass());
-			// log.debug("super-methods (1) : " + clazz.getSuperJavaClass().getMethods().length);
-			// log.debug("super-methods (2) : " + superClazz.getMethods().length);
-			// log.debug("super-super       : " + clazz.getSuperJavaClass().getSuperJavaClass());
-			findConnectedMethods(method, testCodeMap, superClazz);
-		}
-	}
+            if (type.getLifeCycleAnnotations().contains(annotationType))
+            {
+              log.debug("     method is connected : " + m.getName() + " " + a);
+              lifecycleAnnotationForThisTypeFound = true;
+              testCodeMap.get(method).add(new JavaMethodHashed(m));
+            }
+          }
+        }
+      }
+    }
+    JavaClass superClazz = clazz.getSuperJavaClass();
+    // log.debug("super class of " + clazz + " is " + superClazz);
+    // JavaClass superClazz = bugWorkAroundFindingCorrectSuperclass(clazz);
+    /**
+     * calls recursivly with parent class
+     */
+    if (!((superClazz == null) || "java.lang.Object".equals(superClazz.getFullyQualifiedName())))
+    {
 
-	private JavaMethod findQDoxMethod(final Location loc)
-	{
-		if (locationMethodMap.containsKey(loc))
-		{
-			return locationMethodMap.get(loc);
-		}
-		else
-		{
-			return null;
-		}
-	}
+      // log.debug("current           : " + clazz);
+      // log.debug("super             : " + clazz.getSuperJavaClass());
+      // log.debug("super-methods (1) : " + clazz.getSuperJavaClass().getMethods().length);
+      // log.debug("super-methods (2) : " + superClazz.getMethods().length);
+      // log.debug("super-super       : " + clazz.getSuperJavaClass().getSuperJavaClass());
+      findConnectedMethods(method, testCodeMap, superClazz);
+    }
+  }
 
-	private void initQdoxSearchBase()
-	{
-		if (locationMethodMap == null)
-		{
-			log.debug("init QDoxMethod map  ");
-			locationMethodMap = new ConcurrentHashMap<Location, JavaMethod>(locationList.size());
+  private JavaMethod findQDoxMethod(final Location loc)
+  {
+    if (locationMethodMap.containsKey(loc))
+    {
+      return locationMethodMap.get(loc);
+    }
+    else
+    {
+      return null;
+    }
+  }
 
-			final CommonStore store = pico.getComponent(CommonStore.class);
-			final JavaClass[] javaClassArray = store.getJavaClasses().toArray(new JavaClass[store.getJavaClasses().size()]);
-			List<JavaMethod> methods = new ArrayList<JavaMethod>();
+  private void initQdoxSearchBase()
+  {
+    if (locationMethodMap == null)
+    {
+      log.debug("init QDoxMethod map  ");
+      locationMethodMap = new ConcurrentHashMap<Location, JavaMethod>(locationList.size());
 
-			@Data
-			class Range
-			{
-				private final int start;
-				private final int end;
+      final CommonStore store = pico.getComponent(CommonStore.class);
+      final JavaClass[] javaClassArray = store.getJavaClasses().toArray(new JavaClass[store.getJavaClasses().size()]);
+      List<JavaMethod> methods = new ArrayList<JavaMethod>();
 
-				public Range[] init(final int max, final int count)
-				{
-					// init ranges
-					Range[] ranges = new Range[max];
-					for (int i = 0; i < ranges.length; i++)
-					{
-						if (i == 0)
-						{
-							ranges[0] = new Range(0, count / ranges.length);
-						}
-						else
-						{
-							ranges[i] = new Range(ranges[i - 1].getEnd() + 1, Math.min(ranges[i - 1].getEnd() + 1 + (count / ranges.length), count - 1));
-						}
-					}
-					return ranges;
-				}
-			}
+      @Data
+      class Range
+      {
+        private final int start;
+        private final int end;
 
-			final ThreadPool pool = ThreadPool.getNaturalInstance();
+        public Range[] init(final int max, final int count)
+        {
+          // init ranges
+          Range[] ranges = new Range[max];
+          for (int i = 0; i < ranges.length; i++)
+          {
+            if (i == 0)
+            {
+              ranges[0] = new Range(0, count / ranges.length);
+            }
+            else
+            {
+              ranges[i] = new Range(ranges[i - 1].getEnd() + 1, Math.min(ranges[i - 1].getEnd() + 1 + (count / ranges.length), count - 1));
+            }
+          }
+          return ranges;
+        }
+      }
 
-			if (log.isDebugEnabled())
-			{
-				log.debug("listing methods");
-			}
+      final ThreadPool pool = ThreadPool.getNaturalInstance();
 
-			for (JavaClass clazz : javaClassArray)
-			{
-				for (JavaMethod method : clazz.getMethods())
-				{
-					methods.add(method);
-				}
-			}
+      if (log.isDebugEnabled())
+      {
+        log.debug("listing methods");
+      }
 
-			final JavaMethod[] methodsArray = methods.toArray(new JavaMethod[methods.size()]);
+      for (JavaClass clazz : javaClassArray)
+      {
+        for (JavaMethod method : clazz.getMethods())
+        {
+          methods.add(method);
+        }
+      }
 
-			// FIXME: ranges falsch, zu klein
-			Range[] ranges = new Range(0, 0).init(100, methodsArray.length);
+      final JavaMethod[] methodsArray = methods.toArray(new JavaMethod[methods.size()]);
 
-			if (log.isDebugEnabled())
-			{
-				log.debug("finding locations");
-			}
-			for (int i = 0; i < ranges.length; i++)
-			{
-				final Range currentRange = ranges[i];
-				pool.submit(new Runnable()
-				{
-					@Override
-					public void run()
-					{
-						for (Location location : locationList)
-						{
-							for (int index = currentRange.getStart(); index <= currentRange.getEnd(); index++)
-							{
-								JavaMethod method = methodsArray[index];
-								if ((method.getLineNumber() >= location.getLineStart()) && (method.getLineNumber() <= location.getLineEnd()))
-								{
-									String file = method.getSource().getURL().getFile();
+      // FIXME: ranges falsch, zu klein
+      Range[] ranges = new Range(0, 0).init(100, methodsArray.length);
 
-									if (file.equals(location.getFile()))
-									{
-										locationMethodMap.put(location, methodsArray[index]);
-										break;
-									}
-								}
-							}
-						}
-					}
-				});
-			}
+      if (log.isDebugEnabled())
+      {
+        log.debug("finding locations");
+      }
+      for (int i = 0; i < ranges.length; i++)
+      {
+        final Range currentRange = ranges[i];
+        pool.submit(new Runnable()
+        {
+          @Override
+          public void run()
+          {
+            for (Location location : locationList)
+            {
+              for (int index = currentRange.getStart(); index <= currentRange.getEnd(); index++)
+              {
+                JavaMethod method = methodsArray[index];
+                if ((method.getLineNumber() >= location.getLineStart()) && (method.getLineNumber() <= location.getLineEnd()))
+                {
+                  String file = method.getSource().getURL().getFile();
 
-			pool.waitForShutdown();
+                  if (file.equals(location.getFile()))
+                  {
+                    locationMethodMap.put(location, methodsArray[index]);
+                    break;
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
 
-			log.debug("end QDoxMethodmap init");
-		}
-	}
+      pool.waitForShutdown();
+
+      log.debug("end QDoxMethodmap init");
+    }
+  }
 }

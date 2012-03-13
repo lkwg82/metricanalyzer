@@ -90,7 +90,7 @@ public class SourcePathFixer
         new JavaSourceFileFinder().addVisitor(visitor).scanDirectory(baseDirectory);
 
         // clean
-        return results; // cleanupPaths(results);
+        return cleanupPaths(results, baseDirectory);
       }
       else
       {
@@ -103,18 +103,19 @@ public class SourcePathFixer
     }
   }
 
-  // private Set<String> cleanupPaths(final Set<String> paths)
-  // {
-  // Set<String> results = new TreeSet<String>(paths);
-  // for (String path : paths)
-  // {
-  // if (path.endsWith("/target/test-classes") || path.endsWith("/test/resources"))
-  // {
-  // results.remove(path);
-  // }
-  // }
-  // return paths;
-  // }
+  private Set<String> cleanupPaths(final Set<String> paths, final File baseDirectory)
+  {
+    String basePath = baseDirectory.getAbsolutePath();
+    Set<String> results = new TreeSet<String>(paths);
+    for (String path : paths)
+    {
+      if (path.startsWith(basePath + "/target"))
+      {
+        results.remove(path);
+      }
+    }
+    return results;
+  }
 
   class PackageFindHandler implements IQDoxScanHandler
   {
