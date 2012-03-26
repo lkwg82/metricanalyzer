@@ -1,270 +1,314 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>DemoProject</groupId>
+    <artifactId>DemoProject</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
 
-	<parent>
-		<groupId>de.lgohlke.poms</groupId>
-		<artifactId>parent</artifactId>
-		<version>6</version>
-		<relativePath>../pom.xml</relativePath>
-	</parent>
 
-	<groupId>de.lgohlke.master</groupId>
-	<artifactId>MetricsAnalyzer</artifactId>
-	<version>0.7-SNAPSHOT</version>
-	<name>MetricsAnalyzer</name>
 
-	<scm>
-		<!-- <connection>scm:svn:https://master.lgohlke.de/_svn/projects/MetricAnalyzer/trunk</connection> -->
-		<developerConnection>scm:svn:https://metricanalyzer.googlecode.com/svn/trunk</developerConnection>
-	</scm>
+    <repositories>
+        <repository>
+            <id>de.lgohlke.maven3</id>
+            <url>http://repos3.lgohlke.de</url>
+        </repository>
+        <repository>
+            <id>de.lgohlke.maven3.snaps</id>
+            <url>http://snapshots3.lgohlke.de</url>
+        </repository>
+        <repository>
+            <id>de.lgohlke.maven2.snaps</id>
+            <url>http://snapshots.lgohlke.de/maven2</url>
+        </repository>
+        <repository>
+            <id>de.lgohlke.maven2</id>
+            <url>http://repos.lgohlke.de/maven2</url>
+        </repository>
+    </repositories>
 
-	<properties>
-		<java.version>1.7</java.version>
-		<sonar.version>2.13.1</sonar.version>
-		<lombok.version>0.10.8</lombok.version>
-		<delombok.version>0.9.3.1</delombok.version>
-		<scm.path>https://metricanalyzer.googlecode.com/svn/trunk</scm.path>
-		<java.main.class>de.lgohlke.runner.CLIRunner</java.main.class>
-		<test-type>NONE</test-type>
-	</properties>
+    <parent>
+        <groupId>de.lgohlke.poms</groupId>
+        <artifactId>parent</artifactId>
+        <version>3</version>
+        <relativePath />
+    </parent>
 
-	<repositories>
-		<repository>
-			<id>de.lgohlke.maven3</id>
-			<url>http://repos3.lgohlke.de</url>
-		</repository>
-		<repository>
-			<id>de.lgohlke.maven3.snaps</id>
-			<url>http://snapshots3.lgohlke.de</url>
-		</repository>
-		<repository>
-			<id>de.lgohlke.maven2.snaps</id>
-			<url>http://snapshots.lgohlke.de/maven2</url>
-		</repository>
-		<repository>
-			<id>de.lgohlke.maven2</id>
-			<url>http://repos.lgohlke.de/maven2</url>
-		</repository>
-	</repositories>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.codehaus.sonar</groupId>
-			<artifactId>sonar-plugin-api</artifactId>
-			<version>${sonar.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>jcl-over-slf4j</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>log4j-over-slf4j</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.codehaus.sonar</groupId>
-			<artifactId>sonar-squid</artifactId>
-			<version>${sonar.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.codehaus.sonar.plugins</groupId>
-			<artifactId>sonar-squid-java-plugin</artifactId>
-			<version>${sonar.version}</version>
-		</dependency>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>de.lgohlke.maven2.plugins</id>
+            <url>http://repos.lgohlke.de</url>
+        </pluginRepository>
+        <pluginRepository>
+            <id>de.lgohlke.maven3.plugins</id>
+            <url>http://repos3.lgohlke.de</url>
+        </pluginRepository>
+    </pluginRepositories>
 
-		<dependency>
-			<groupId>com.thoughtworks.qdox</groupId>
-			<artifactId>qdox</artifactId>
-			<version>1.12</version>
-			<!-- <scope>test</scope> -->
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-math</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>commons-logging</groupId>
-			<artifactId>commons-logging</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-all</artifactId>
-			<version>1.9.0</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>de.lgohlke</groupId>
-			<artifactId>commons</artifactId>
-			<version>0.4</version>
-		</dependency>
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<version>${lombok.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.picocontainer</groupId>
-			<artifactId>picocontainer</artifactId>
-			<version>2.14.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.picocontainer</groupId>
-			<artifactId>picocontainer-gems</artifactId>
-			<version>2.14.1</version>
-		</dependency>
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>11.0.2</version>
-		</dependency>
-		<dependency>
-			<groupId>net.sf.jopt-simple</groupId>
-			<artifactId>jopt-simple</artifactId>
-			<version>4.3</version>
-		</dependency>
-		<dependency>
-			<groupId>org.testng</groupId>
-			<artifactId>testng</artifactId>
-			<version>6.4</version>
-		</dependency>
-		<dependency>
-			<groupId>commons-beanutils</groupId>
-			<artifactId>commons-beanutils</artifactId>
-			<version>1.8.3</version>
-		</dependency>
-	</dependencies>
-	<build>
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-surefire-plugin</artifactId>
-					<dependencies>
-						<dependency>
-							<groupId>org.apache.maven.surefire</groupId>
-							<artifactId>surefire-junit4</artifactId>
-							<version>2.12</version>
-						</dependency>
-					</dependencies>
-				</plugin>
-				<plugin>
-					<groupId>org.projectlombok</groupId>
-					<artifactId>maven-lombok-plugin</artifactId>
-					<version>${delombok.version}</version>
-					<configuration>
-						<sourceDirectory>src/main/java</sourceDirectory>
-					</configuration>
-					<executions>
-						<execution>
-							<phase>generate-sources</phase>
-							<goals>
-								<goal>delombok</goal>
-							</goals>
-						</execution>
-					</executions>
-					<dependencies>
-						<dependency>
-							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok</artifactId>
-							<version>${delombok.version}</version>
-						</dependency>
-						<dependency>
-							<groupId>sun.jdk</groupId>
-							<artifactId>tools</artifactId>
-							<version>${java.version}</version>
-							<scope>system</scope>
-							<systemPath>${JAVA_HOME}/lib/tools.jar</systemPath>
-						</dependency>
-					</dependencies>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-jar-plugin</artifactId>
-					<configuration>
-						<archive>
-							<manifest>
-								<addClasspath>true</addClasspath>
-								<mainClass>${java.main.class}</mainClass>
-							</manifest>
-						</archive>
-					</configuration>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-compiler-plugin</artifactId>
-					<configuration>
-						<source>${java.version}</source>
-						<target>${java.version}</target>
-						<encoding>UTF-8</encoding>
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
+    <build>
+        <testResources>
+            <testResource>
+                <filtering>true</filtering>
+                <directory>src/test/resources</directory>
+            </testResource>
+        </testResources>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.11</version>
+                </plugin>
+                <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven
+                    build itself. -->
+                <plugin>
+                    <groupId>org.eclipse.m2e</groupId>
+                    <artifactId>lifecycle-mapping</artifactId>
+                    <version>1.0.0</version>
+                    <configuration>
+                        <lifecycleMappingMetadata>
+                            <pluginExecutions>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>org.apache.maven.plugins</groupId>
+                                        <artifactId>maven-antrun-plugin</artifactId>
+                                        <versionRange>[1.7,)</versionRange>
+                                        <goals>
+                                            <goal>run</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore></ignore>
+                                    </action>
+                                </pluginExecution>
+                            </pluginExecutions>
+                        </lifecycleMappingMetadata>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version><!--$NO-MVN-MAN-VER$ -->
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.3.2</version><!--$NO-MVN-MAN-VER$ -->
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 
-		<plugins>
-			<plugin>
-				<artifactId>maven-release-plugin</artifactId>
-				<configuration>
-					<tagBase>https://metricanalyzer.googlecode.com/svn/tags</tagBase>
-				</configuration>
-			</plugin>
-			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-assembly-plugin</artifactId> 
-				<executions> <execution> <goals> <goal>attached</goal> </goals> <phase>package</phase> 
-				<configuration> <descriptorRefs> <descriptorRef>jar-with-dependencies</descriptorRef> 
-				</descriptorRefs> <archive> <manifest> <mainClass>${java.main.class}</mainClass> 
-				</manifest> </archive> </configuration> </execution> </executions> </plugin> -->
-			<!-- <plugin> <groupId>org.codehaus.mojo</groupId> <artifactId>build-helper-maven-plugin</artifactId> 
-				<version>1.7</version> <executions> <execution> <id>add-source</id> <phase>generate-sources</phase> 
-				<goals> <goal>add-source</goal> </goals> <configuration> <sources> <source>src/main/aspect</source> 
-				</sources> </configuration> </execution> </executions> </plugin> -->
-		</plugins>
-	</build>
-	<profiles>
-		<profile>
-			<id>analyzer</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>exec-maven-plugin</artifactId>
-						<version>1.2.1</version>
-						<executions>
-							<execution>
-								<phase>compile</phase>
-								<goals>
-									<goal>java</goal>
-								</goals>
-								<configuration>
-									<mainClass>${java.main.class}</mainClass>
-									<arguments>
-										<argument>--maven-project-path</argument>
-										<argument>${maven-project-path}</argument>
-										<argument>--test-type</argument>
-										<argument>${test-type}</argument>
-									</arguments>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
+            <!-- only for experiment 
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.7</version>
+
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.directory.studio</groupId>
+                        <artifactId>org.apache.commons.codec</artifactId>
+                        <version>1.3</version>
+                        <scope>compile</scope>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <id>log-run</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                <configuration>
+                    <target>
+                        <property name="compile_classpath" refid="maven.compile.classpath" />
+                        <property name="runtime_classpath" refid="maven.runtime.classpath" />
+                        <property name="test_classpath" refid="maven.test.classpath" />
+                        <property name="plugin_classpath" refid="maven.plugin.classpath" />
+
+                        <java fork="true" classname="de.utils.TimeStampGenerator" outputproperty="time" classpath="target/classes" />
+
+                        <java fork="true" classname="de.utils.IdGenerator" outputproperty="vid">
+                            <classpath>
+                                <pathelement path="target/classes" />
+                                <pathelement path="${runtime_classpath}" />
+                                <pathelement path="${plugin_classpath}" />
+                                <pathelement path="${test_classpath}" />
+                                <pathelement path="${compile_classpath}" />
+                            </classpath>
+                        </java>
+
+                        <echo file="log" append="true">${vid} G${versuch.gruppe},T${versuch.test} ${time} run compile ${line.separator}</echo>
+                    </target>
+                </configuration>
+                    </execution>
+                    <execution>
+                        <id>log-after</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                <configuration>
+                    <target>
+                        <property name="compile_classpath" refid="maven.compile.classpath" />
+                        <property name="runtime_classpath" refid="maven.runtime.classpath" />
+                        <property name="test_classpath" refid="maven.test.classpath" />
+                        <property name="plugin_classpath" refid="maven.plugin.classpath" />
+
+                        <java fork="true" classname="de.utils.TimeStampGenerator" outputproperty="time" classpath="target/classes" />
+
+                        <java fork="true" classname="de.utils.IdGenerator" outputproperty="vid">
+                            <classpath>
+                                <pathelement path="target/classes" />
+                                <pathelement path="${runtime_classpath}" />
+                                <pathelement path="${plugin_classpath}" />
+                                <pathelement path="${test_classpath}" />
+                                <pathelement path="${compile_classpath}" />
+                            </classpath>
+                        </java>
+
+                        <echo file="log" append="true">${vid} G${versuch.gruppe},T${versuch.test} ${time} run success ${line.separator}</echo>
+
+                        <property name="tar" value="G${versuch.gruppe}.T${versuch.test}.changedCode.tar"/>
+                        <tar destfile="${tar}">
+                            <tarfileset dir=".">
+                                <include name="src/**"/>
+                                <include name="log"/>
+                          </tarfileset>
+                        </tar>
+
+                        <bzip2 src="${tar}" destfile="protokoll_${vid}_${tar}.bz2"/>
+                        <delete file="${tar}"/>
+                    </target>
+                </configuration>
+                    </execution>
+                </executions>
+            </plugin> -->
+
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <properties>
+                        <property>
+                            <name>listener</name>
+                            <value>de.lgohlke.runner.TestNGAnalysisRunner</value>
+                        </property>
+                    </properties>
+                    <parallel>class</parallel>
+                    <threadCount>10</threadCount>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    <dependencies>
+        <dependency>
+            <groupId>de.lgohlke.master</groupId>
+            <artifactId>MetricsAnalyzer</artifactId>
+            <version>0.5</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>6.3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-server</artifactId>
+            <version>${selenium.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-java</artifactId>
+            <version>${selenium.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-firefox-driver</artifactId>
+            <version>${selenium.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-remote-driver</artifactId>
+            <version>${selenium.version}</version>
+        </dependency>
+
+
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.6.4</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.jtidy</groupId>
+            <artifactId>jtidy</artifactId>
+            <version>r938</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.1</version><!--$NO-MVN-MAN-VER$ -->
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <version>1.9.0</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-httpclient</groupId>
+            <artifactId>commons-httpclient</artifactId>
+            <version>3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jvnet.jaxb2_commons</groupId>
+            <artifactId>jaxb2-basics</artifactId>
+            <version>0.6.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20090211</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-core</artifactId>
+            <version>${camel.version} </version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-mail</artifactId>
+            <version>${camel.version}</version>
+            <!-- use the same version as your Camel core version -->
+        </dependency>
+        <dependency>
+            <groupId>com.thoughtworks.xstream</groupId>
+            <artifactId>xstream</artifactId>
+        </dependency>
+
+    </dependencies>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <selenium.version>2.17.0</selenium.version>
+        <camel.version>2.9.0</camel.version>
+        <!-- only for experiment -->
+        <versuch.gruppe>1</versuch.gruppe>
+        <versuch.test>1</versuch.test>
+    </properties>
 </project>
