@@ -43,7 +43,7 @@ public class AnalyzerFactory
     }
     else
     {
-      throw new ConfigurationException("could not configure with maven, check directory to pom.xml : " + projectdir.getAbsolutePath());
+      throw new ConfigurationException("could not configure with maven, set directory to pom.xml : " + projectdir.getAbsolutePath());
     }
   }
 
