@@ -1,6 +1,6 @@
-
 =quick start=
 
+== standalone analysis ==
   # checkout the trunk with 
 {{{
 svn checkout http://metricanalyzer.googlecode.com/svn/trunk/ metricanalyzer-read-only
@@ -11,3 +11,76 @@ mvn -P analyzer compile -Dmaven-project-path=.
 }}}
   # open the analysis from ./target/analysis/tests.html or
   # open the ordered list from ./target/analysis/orderedList.html
+
+see the pom.xml in the profile 'analyzer' for the internal calls
+
+== run as testng listener ==
+
+  # have a maven project
+  # add these repositories (sry it is quick and mostly dirty)
+{{{
+    <repositories>
+        <repository>
+            <id>de.lgohlke.maven3</id>
+            <url>http://repos3.lgohlke.de</url>
+        </repository>
+        <repository>
+            <id>de.lgohlke.maven3.snaps</id>
+            <url>http://snapshots3.lgohlke.de</url>
+        </repository>
+        <repository>
+            <id>de.lgohlke.maven2.snaps</id>
+            <url>http://snapshots.lgohlke.de/maven2</url>
+        </repository>
+        <repository>
+            <id>de.lgohlke.maven2</id>
+            <url>http://repos.lgohlke.de/maven2</url>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>de.lgohlke.maven2.plugins</id>
+            <url>http://repos.lgohlke.de</url>
+        </pluginRepository>
+        <pluginRepository>
+            <id>de.lgohlke.maven3.plugins</id>
+            <url>http://repos3.lgohlke.de</url>
+        </pluginRepository>
+    </pluginRepositories>
+}}}
+  # add the testng listener
+{{{
+    <build>
+       <plugins>
+          <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>              
+                <version>2.11</version>
+                <configuration>
+                    <properties>
+                        <property>
+                            <name>listener</name>             
+                            <value>de.lgohlke.runner.TestNGAnalysisRunner</value>
+                        </property>
+                    </properties>
+                    <parallel>class</parallel>
+                    <threadCount>10</threadCount>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+}}}
+  # add the metric analyzer as dependency
+{{{
+        <dependency>
+            <groupId>de.lgohlke.master</groupId>
+            <artifactId>MetricsAnalyzer</artifactId>
+            <version>0.5</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+}}}
