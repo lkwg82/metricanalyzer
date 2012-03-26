@@ -1,0 +1,14 @@
+#quick start
+
+=quick start=
+
+  # checkout the trunk with 
+{{{
+svn checkout http://metricanalyzer.googlecode.com/svn/trunk/ metricanalyzer-read-only
+}}}
+  # run a simple analysis with 
+{{{
+mvn -P analyzer compile -Dmaven-project-path=.
+}}}
+  # open the analysis from ./target/analysis/tests.html or
+  # open the ordered list from ./target/analysis/orderedList.html
