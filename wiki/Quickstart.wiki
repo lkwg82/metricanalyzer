@@ -17,7 +17,7 @@ see the pom.xml in the profile 'analyzer' for the internal calls
 == run as testng listener ==
 
   # have a maven project
-  # add these repositories (sry it is quick and mostly dirty)
+  # add these repositories (sry it is quick and dirty)
 {{{
     <repositories>
         <repository>
@@ -84,3 +84,5 @@ see the pom.xml in the profile 'analyzer' for the internal calls
             </exclusions>
         </dependency>
 }}}
+  # run the tests let at least 2 tests fail
+  # see the hint at the end of the a test run with failed tests
