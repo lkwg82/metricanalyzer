@@ -1,0 +1,182 @@
+<class-diagram version="1.0.4" icons="true" automaticImage="PNG" always-add-relationships="true" generalizations="true" 
+  realizations="true" associations="true" dependencies="true" nesting-relationships="true">  
+  <class id="1" corner="BOTTOM_RIGHT" language="java" name="net.sprd.qa.prototype.DB.UserDB" project="DemoProject" 
+    file="/DemoProject/src/main/java/net/sprd/qa/prototype/DB/UserDB.java" binary="false">    
+    <position height="-1" width="-1" x="208" y="460"/>    
+    <display autosize="true" package="true" initial-value="true" signature="true" visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false"/>      
+      <operations public="false" package="false" protected="false" private="false"/>    
+    </display>  
+  </class>  
+  <class id="2" corner="BOTTOM_RIGHT" language="java" name="net.sprd.qa.prototype.DB.APIToken" project="DemoProject" 
+    file="/DemoProject/src/main/java/net/sprd/qa/prototype/DB/APIToken.java" binary="false">    
+    <position height="-1" width="-1" x="270" y="540"/>    
+    <display autosize="true" package="true" initial-value="true" signature="true" visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false"/>      
+      <operations public="false" package="false" protected="false" private="false"/>    
+    </display>  
+  </class>  
+  <class id="3" corner="BOTTOM_RIGHT" language="java" name="net.sprd.qa.prototype.API.APIService" project="DemoProject" 
+    file="/DemoProject/src/main/java/net/sprd/qa/prototype/API/APIService.java" binary="false">    
+    <position height="-1" width="-1" x="445" y="330"/>    
+    <display autosize="true" package="true" initial-value="true" signature="true" visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false"/>      
+      <operations public="false" package="false" protected="false" private="false"/>    
+    </display>  
+  </class>  
+  <interface id="4" corner="BOTTOM_RIGHT" language="java" name="net.sprd.qa.prototype.Service" project="DemoProject" 
+    file="/DemoProject/src/main/java/net/sprd/qa/prototype/Service.java" binary="false">    
+    <position height="-1" width="-1" x="299" y="229"/>    
+    <display autosize="true" package="true" initial-value="true" signature="true" visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false"/>      
+      <operations public="false" package="false" protected="false" private="false"/>    
+    </display>  
+  </interface>  
+  <class id="5" corner="BOTTOM_RIGHT" language="java" name="net.sprd.qa.prototype.API.ProductAPI" project="DemoProject" 
+    file="/DemoProject/src/main/java/net/sprd/qa/prototype/API/ProductAPI.java" binary="false">    
+    <position height="-1" width="-1" x="514" y="466"/>    
+    <display autosize="true" package="true" initial-value="true" signature="true" visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false"/>      
+      <operations public="false" package="false" protected="false" private="false"/>    
+    </display>  
+  </class>  
+  <class id="6" corner="BOTTOM_RIGHT" language="java" name="net.sprd.qa.prototype.Bus.BusConnector" 
+    project="DemoProject" file="/DemoProject/src/main/java/net/sprd/qa/prototype/Bus/BusConnector.java" binary="false">    
+    <position height="-1" width="-1" x="290" y="402"/>    
+    <display autosize="true" package="true" initial-value="true" signature="true" visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false"/>      
+      <operations public="false" package="false" protected="false" private="false"/>    
+    </display>  
+  </class>  
+  <class id="7" corner="BOTTOM_RIGHT" language="java" name="net.sprd.qa.prototype.API.UserAPI" project="DemoProject" 
+    file="/DemoProject/src/main/java/net/sprd/qa/prototype/API/UserAPI.java" binary="false">    
+    <position height="-1" width="-1" x="377" y="465"/>    
+    <display autosize="true" package="true" initial-value="true" signature="true" visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false"/>      
+      <operations public="false" package="false" protected="false" private="false"/>    
+    </display>  
+  </class>  
+  <class id="11" corner="BOTTOM_RIGHT" language="java" name="net.sprd.qa.prototype.Bus.BusService" project="DemoProject" 
+    file="/DemoProject/src/main/java/net/sprd/qa/prototype/Bus/BusService.java" binary="false">    
+    <position height="-1" width="-1" x="294" y="330"/>    
+    <display autosize="true" package="true" initial-value="true" signature="true" visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false"/>      
+      <operations public="false" package="false" protected="false" private="false"/>    
+    </display>  
+  </class>  
+  <class id="15" corner="BOTTOM_RIGHT" language="java" name="net.sprd.qa.prototype.DB.ProductDB" project="DemoProject" 
+    file="/DemoProject/src/main/java/net/sprd/qa/prototype/DB/ProductDB.java" binary="false">    
+    <position height="-1" width="-1" x="80" y="461"/>    
+    <display autosize="true" package="true" initial-value="true" signature="true" visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false"/>      
+      <operations public="false" package="false" protected="false" private="false"/>    
+    </display>  
+  </class>  
+  <class id="16" corner="BOTTOM_RIGHT" language="java" name="net.sprd.qa.prototype.DB.DBService" project="DemoProject" 
+    file="/DemoProject/src/main/java/net/sprd/qa/prototype/DB/DBService.java" binary="false">    
+    <position height="-1" width="-1" x="142" y="331"/>    
+    <display autosize="true" package="true" initial-value="true" signature="true" visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false"/>      
+      <operations public="false" package="false" protected="false" private="false"/>    
+    </display>  
+  </class>  
+  <association>    
+    <end type="SOURCE" nodeId="16" navigable="false">      
+      <attribute name="bus"/>      
+      <multiplicity minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" nodeId="11" navigable="true"/>    
+    <display labels="false" multiplicity="false"/>  
+  </association>  
+  <realization>    
+    <end type="SOURCE" nodeId="16"/>    
+    <end type="TARGET" nodeId="4"/>  
+  </realization>  
+  <association>    
+    <bendpoint x="452" y="421"/>    
+    <end type="SOURCE" nodeId="5" navigable="false">      
+      <attribute name="connector"/>      
+      <multiplicity minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" nodeId="6" navigable="true"/>    
+    <display labels="false" multiplicity="false"/>  
+  </association>  
+  <association>    
+    <end type="SOURCE" nodeId="7" navigable="false">      
+      <attribute name="connector"/>      
+      <multiplicity minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" nodeId="6" navigable="true"/>    
+    <display labels="false" multiplicity="false"/>  
+  </association>  
+  <association>    
+    <end type="SOURCE" nodeId="3" navigable="false">      
+      <attribute name="productApi"/>      
+      <multiplicity minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" nodeId="5" navigable="true"/>    
+    <display labels="false" multiplicity="false"/>  
+  </association>  
+  <association>    
+    <end type="SOURCE" nodeId="3" navigable="false">      
+      <attribute name="connector"/>      
+      <multiplicity minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" nodeId="6" navigable="true"/>    
+    <display labels="false" multiplicity="false"/>  
+  </association>  
+  <association>    
+    <end type="SOURCE" nodeId="16" navigable="false">      
+      <attribute name="productDB"/>      
+      <multiplicity minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" nodeId="15" navigable="true"/>    
+    <display labels="false" multiplicity="false"/>  
+  </association>  
+  <association>    
+    <end type="SOURCE" nodeId="3" navigable="false">      
+      <attribute name="userApi"/>      
+      <multiplicity minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" nodeId="7" navigable="true"/>    
+    <display labels="false" multiplicity="false"/>  
+  </association>  
+  <realization>    
+    <end type="SOURCE" nodeId="3"/>    
+    <end type="TARGET" nodeId="4"/>  
+  </realization>  
+  <dependency>    
+    <bendpoint x="360" y="331"/>    
+    <end type="SOURCE" nodeId="3"/>    
+    <end type="TARGET" nodeId="11"/>  
+  </dependency>  
+  <association>    
+    <end type="SOURCE" nodeId="16" navigable="false">      
+      <attribute name="userDB"/>      
+      <multiplicity minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" nodeId="1" navigable="true"/>    
+    <display labels="false" multiplicity="false"/>  
+  </association>  
+  <realization>    
+    <end type="SOURCE" nodeId="11"/>    
+    <end type="TARGET" nodeId="4"/>  
+  </realization>  
+  <association>    
+    <end type="SOURCE" nodeId="1" navigable="false">      
+      <attribute name="tokenTable"/>      
+      <multiplicity minimum="0" maximum="2147483647"/>    
+    </end>    
+    <end type="TARGET" nodeId="2" navigable="true"/>    
+    <display labels="false" multiplicity="false"/>  
+  </association>  
+  <dependency>    
+    <end type="SOURCE" nodeId="6"/>    
+    <end type="TARGET" nodeId="11"/>  
+  </dependency>  
+  <classifier-display autosize="true" package="true" initial-value="true" signature="true" visibility="true">    
+    <attributes public="false" package="false" protected="false" private="false"/>    
+    <operations public="true" package="false" protected="false" private="false"/>  
+  </classifier-display>  
+  <association-display labels="false" multiplicity="false"/>
+</class-diagram>

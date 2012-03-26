@@ -1,0 +1,314 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>DemoProject</groupId>
+    <artifactId>DemoProject</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+
+
+
+    <repositories>
+        <repository>
+            <id>de.lgohlke.maven3</id>
+            <url>http://repos3.lgohlke.de</url>
+        </repository>
+        <repository>
+            <id>de.lgohlke.maven3.snaps</id>
+            <url>http://snapshots3.lgohlke.de</url>
+        </repository>
+        <repository>
+            <id>de.lgohlke.maven2.snaps</id>
+            <url>http://snapshots.lgohlke.de/maven2</url>
+        </repository>
+        <repository>
+            <id>de.lgohlke.maven2</id>
+            <url>http://repos.lgohlke.de/maven2</url>
+        </repository>
+    </repositories>
+
+    <parent>
+        <groupId>de.lgohlke.poms</groupId>
+        <artifactId>parent</artifactId>
+        <version>3</version>
+        <relativePath />
+    </parent>
+
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>de.lgohlke.maven2.plugins</id>
+            <url>http://repos.lgohlke.de</url>
+        </pluginRepository>
+        <pluginRepository>
+            <id>de.lgohlke.maven3.plugins</id>
+            <url>http://repos3.lgohlke.de</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <build>
+        <testResources>
+            <testResource>
+                <filtering>true</filtering>
+                <directory>src/test/resources</directory>
+            </testResource>
+        </testResources>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.11</version>
+                </plugin>
+                <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven
+                    build itself. -->
+                <plugin>
+                    <groupId>org.eclipse.m2e</groupId>
+                    <artifactId>lifecycle-mapping</artifactId>
+                    <version>1.0.0</version>
+                    <configuration>
+                        <lifecycleMappingMetadata>
+                            <pluginExecutions>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>org.apache.maven.plugins</groupId>
+                                        <artifactId>maven-antrun-plugin</artifactId>
+                                        <versionRange>[1.7,)</versionRange>
+                                        <goals>
+                                            <goal>run</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore></ignore>
+                                    </action>
+                                </pluginExecution>
+                            </pluginExecutions>
+                        </lifecycleMappingMetadata>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version><!--$NO-MVN-MAN-VER$ -->
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.3.2</version><!--$NO-MVN-MAN-VER$ -->
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- only for experiment 
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.7</version>
+
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.directory.studio</groupId>
+                        <artifactId>org.apache.commons.codec</artifactId>
+                        <version>1.3</version>
+                        <scope>compile</scope>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <id>log-run</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                <configuration>
+                    <target>
+                        <property name="compile_classpath" refid="maven.compile.classpath" />
+                        <property name="runtime_classpath" refid="maven.runtime.classpath" />
+                        <property name="test_classpath" refid="maven.test.classpath" />
+                        <property name="plugin_classpath" refid="maven.plugin.classpath" />
+
+                        <java fork="true" classname="de.utils.TimeStampGenerator" outputproperty="time" classpath="target/classes" />
+
+                        <java fork="true" classname="de.utils.IdGenerator" outputproperty="vid">
+                            <classpath>
+                                <pathelement path="target/classes" />
+                                <pathelement path="${runtime_classpath}" />
+                                <pathelement path="${plugin_classpath}" />
+                                <pathelement path="${test_classpath}" />
+                                <pathelement path="${compile_classpath}" />
+                            </classpath>
+                        </java>
+
+                        <echo file="log" append="true">${vid} G${versuch.gruppe},T${versuch.test} ${time} run compile ${line.separator}</echo>
+                    </target>
+                </configuration>
+                    </execution>
+                    <execution>
+                        <id>log-after</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                <configuration>
+                    <target>
+                        <property name="compile_classpath" refid="maven.compile.classpath" />
+                        <property name="runtime_classpath" refid="maven.runtime.classpath" />
+                        <property name="test_classpath" refid="maven.test.classpath" />
+                        <property name="plugin_classpath" refid="maven.plugin.classpath" />
+
+                        <java fork="true" classname="de.utils.TimeStampGenerator" outputproperty="time" classpath="target/classes" />
+
+                        <java fork="true" classname="de.utils.IdGenerator" outputproperty="vid">
+                            <classpath>
+                                <pathelement path="target/classes" />
+                                <pathelement path="${runtime_classpath}" />
+                                <pathelement path="${plugin_classpath}" />
+                                <pathelement path="${test_classpath}" />
+                                <pathelement path="${compile_classpath}" />
+                            </classpath>
+                        </java>
+
+                        <echo file="log" append="true">${vid} G${versuch.gruppe},T${versuch.test} ${time} run success ${line.separator}</echo>
+
+                        <property name="tar" value="G${versuch.gruppe}.T${versuch.test}.changedCode.tar"/>
+                        <tar destfile="${tar}">
+                            <tarfileset dir=".">
+                                <include name="src/**"/>
+                                <include name="log"/>
+                          </tarfileset>
+                        </tar>
+
+                        <bzip2 src="${tar}" destfile="protokoll_${vid}_${tar}.bz2"/>
+                        <delete file="${tar}"/>
+                    </target>
+                </configuration>
+                    </execution>
+                </executions>
+            </plugin> -->
+
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <properties>
+                        <property>
+                            <name>listener</name>
+                            <value>de.lgohlke.runner.TestNGAnalysisRunner</value>
+                        </property>
+                    </properties>
+                    <parallel>class</parallel>
+                    <threadCount>10</threadCount>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    <dependencies>
+        <dependency>
+            <groupId>de.lgohlke.master</groupId>
+            <artifactId>MetricsAnalyzer</artifactId>
+            <version>0.5</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>6.3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-server</artifactId>
+            <version>${selenium.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-java</artifactId>
+            <version>${selenium.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-firefox-driver</artifactId>
+            <version>${selenium.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-remote-driver</artifactId>
+            <version>${selenium.version}</version>
+        </dependency>
+
+
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.6.4</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.jtidy</groupId>
+            <artifactId>jtidy</artifactId>
+            <version>r938</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.1</version><!--$NO-MVN-MAN-VER$ -->
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <version>1.9.0</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-httpclient</groupId>
+            <artifactId>commons-httpclient</artifactId>
+            <version>3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jvnet.jaxb2_commons</groupId>
+            <artifactId>jaxb2-basics</artifactId>
+            <version>0.6.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20090211</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-core</artifactId>
+            <version>${camel.version} </version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-mail</artifactId>
+            <version>${camel.version}</version>
+            <!-- use the same version as your Camel core version -->
+        </dependency>
+        <dependency>
+            <groupId>com.thoughtworks.xstream</groupId>
+            <artifactId>xstream</artifactId>
+        </dependency>
+
+    </dependencies>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <selenium.version>2.17.0</selenium.version>
+        <camel.version>2.9.0</camel.version>
+        <!-- only for experiment -->
+        <versuch.gruppe>1</versuch.gruppe>
+        <versuch.test>1</versuch.test>
+    </properties>
+</project>
