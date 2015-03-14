@@ -1,0 +1,122 @@
+
+```
+svn co https://metricanalyzer.googlecode.com/svn/branches/Demoproject DemoProject
+```
+  * run and see, no errors
+```
+mvn test
+```
+  * introduce a **big** error
+in _src/main/java/biz/company/qa/prototype/Bus/BusService.java_ line 67
+
+```
+    init();
+    context.start();
+    for (Entry<ListenerEndpoint, Consumer> e : consumers.entrySet())    
+```
+to
+```
+    init();
+    // context.start();
+    for (Entry<ListenerEndpoint, Consumer> e : consumers.entrySet())
+```
+  * run and see like it explodes :)
+```
+mvn test
+```
+output is
+```
+
+main 17:35:39,446 INFO [CodeDocumentGenerator:337] generating docs for biz.company.qa.prototype.APIServiceTest.removeUserNotExisting()[TESTNG]
+main 17:35:39,446 INFO [CodeDocumentGenerator:337] generating docs for biz.company.qa.prototype.APIServiceTest.userExisting()[TESTNG]
+main 17:35:39,446 INFO [CodeDocumentGenerator:337] generating docs for biz.company.qa.prototype.APIServiceTest.userNotExisting()[TESTNG]
+main 17:35:39,446 INFO [CodeDocumentGenerator:337] generating docs for biz.company.qa.prototype.APIServiceTest.createDummyProduct()[TESTNG]
+main 17:35:40,037 INFO [CodeDocumentGenerator:139] complete
+main 17:35:40,038 INFO [MetricAnalyzer:133] finished
+main 17:35:40,038 INFO [MetricAnalyzer:135] 
+
+
+ see target/analysis for additional help for analysing the problems 
+
+
+
+main 17:35:40,098 INFO [TestNGTests:64] Writing XML output to target/report.xml...
+main 17:35:40,116 INFO [TestNGTests:66] done.
+Tests run: 37, Failures: 19, Errors: 0, Skipped: 0, Time elapsed: 16.855 sec <<< FAILURE!
+
+Results :
+
+Failed tests:   createDummyProduct(biz.company.qa.prototype.APIServiceTest): No consumers available on endpoint: Endpoint[direct://api]. Exchange[Message: [Body is null]]
+  createNewUser(biz.company.qa.prototype.APIServiceTest): No consumers available on endpoint: Endpoint[direct://api]. Exchange[Message: [Body is null]]
+  createNewUserTwice(biz.company.qa.prototype.APIServiceTest): (..)
+  invalidateExpiredToken(biz.company.qa.prototype.APIServiceTest): No consumers available on endpoint: Endpoint[direct://api]. Exchange[Message: [Body is null]]
+  invalidateToken(biz.company.qa.prototype.APIServiceTest): No consumers available on endpoint: Endpoint[direct://api]. Exchange[Message: [Body is null]]
+  login(biz.company.qa.prototype.APIServiceTest): No consumers available on endpoint: Endpoint[direct://api]. Exchange[Message: [Body is null]]
+  loginWrong(biz.company.qa.prototype.APIServiceTest): No consumers available on endpoint: Endpoint[direct://api]. Exchange[Message: [Body is null]]
+  removeUser(biz.company.qa.prototype.APIServiceTest): No consumers available on endpoint: Endpoint[direct://api]. Exchange[Message: [Body is null]]
+  removeUserNotExisting(biz.company.qa.prototype.APIServiceTest): (..)
+  removeUserTwice(biz.company.qa.prototype.APIServiceTest): (..)
+  userExisting(biz.company.qa.prototype.APIServiceTest): No consumers available on endpoint: Endpoint[direct://api]. Exchange[Message: [Body is null]]
+  userNotExisting(biz.company.qa.prototype.APIServiceTest): No consumers available on endpoint: Endpoint[direct://api]. Exchange[Message: [Body is null]]
+  validateExpiredToken(biz.company.qa.prototype.APIServiceTest): No consumers available on endpoint: Endpoint[direct://api]. Exchange[Message: [Body is null]]
+  validateToken(biz.company.qa.prototype.APIServiceTest): No consumers available on endpoint: Endpoint[direct://api]. Exchange[Message: [Body is null]]
+  test(biz.company.qa.prototype.Bus.BusConnectorTest): No consumers available on endpoint: Endpoint[direct://api]. Exchange[Message: [Body is null]]
+  listenersInitializedCorrectlyAfterStart(biz.company.qa.prototype.Bus.BusServiceTest): (..)
+  listenersInitializedCorrectlyBeforeStart(biz.company.qa.prototype.Bus.BusServiceTest): (..)
+  roundtrip(biz.company.qa.prototype.Bus.BusServiceTest): No consumers available on endpoint: Endpoint[direct://api]. Exchange[Message: 0.0022929335421311148]
+  smokeTest(biz.company.qa.prototype.Bus.BusServiceTest): (..)
+
+Tests run: 37, Failures: 19, Errors: 0, Skipped: 0
+
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 20.050s
+[INFO] Finished at: Mon Mar 26 17:35:40 CEST 2012
+[INFO] Final Memory: 13M/321M
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:2.12:test (default-test) on project DemoProject: There are test failures.
+[ERROR] 
+[ERROR] Please refer to /home/lars/development/workspaces/masterarbeit/Demoproject/target/surefire-reports for the individual test results.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+```
+
+
+  * WOW? the important hint:
+```
+
+ see target/analysis for additional help for analysing the problems 
+
+```
+
+  * go to the directory and watch the _orderedList.html_ file
+
+this is the suggested order to start investigation to find the error
+
+| **name** | 	 **score** |
+|:---------|:------------|
+|biz.company.qa.prototype.Bus.BusServiceTest#listenersInitializedCorrectlyBeforeStart	|5 |
+|biz.company.qa.prototype.Bus.BusServiceTest#listenersInitializedCorrectlyAfterStart|	5|
+|biz.company.qa.prototype.APIServiceTest#invalidateToken	|201013 |
+|biz.company.qa.prototype.APIServiceTest#validateToken	| 201013|
+|biz.company.qa.prototype.APIServiceTest#loginWrong	|201014|
+|biz.company.qa.prototype.APIServiceTest#validateExpiredToken	|201014|
+|biz.company.qa.prototype.APIServiceTest#invalidateExpiredToken	|201014|
+|biz.company.qa.prototype.APIServiceTest#createDummyProduct |	201015|
+|biz.company.qa.prototype.APIServiceTest#createNewUser	| 201511 |
+|biz.company.qa.prototype.APIServiceTest#removeUser	| 201512 |
+|biz.company.qa.prototype.APIServiceTest#createNewUserTwice |	201512|
+|biz.company.qa.prototype.APIServiceTest#userExisting |	201512|
+|biz.company.qa.prototype.APIServiceTest#login|	201513|
+|biz.company.qa.prototype.APIServiceTest#removeUserTwice|	201513|
+|biz.company.qa.prototype.APIServiceTest#userNotExisting|	202010|
+|biz.company.qa.prototype.APIServiceTest#removeUserNotExisting	|202010|
+|biz.company.qa.prototype.Bus.BusConnectorTest#test	|301008|
+|biz.company.qa.prototype.Bus.BusServiceTest#smokeTest|	904506|
+|biz.company.qa.prototype.Bus.BusServiceTest#roundtrip	|1001018|
